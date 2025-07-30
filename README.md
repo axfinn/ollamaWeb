@@ -227,17 +227,9 @@ API 调用包含完整的错误处理机制，会在界面上显示友好的错�
 
 如果您觉得这个项目对您有帮助，欢迎扫码请作者喝杯咖啡！
 
-<div align="center">
-  <div style="display: flex; justify-content: center; gap: 50px; margin: 20px 0;">
-    <div>
-      <img src="./img/wxpay.JPG" alt="微信捐赠码" width="200" />
-      <p>微信捐赠</p>
-    </div>
-    <div>
-      <img src="./img/alipay.JPG" alt="支付宝捐赠码" width="200" />
-      <p>支付宝捐赠</p>
-    </div>
-  </div>
-</div>
+<p align="center">
+  <img src="./img/wxpay.JPG" alt="微信捐赠码" width="200" />
+  <img src="./img/alipay.JPG" alt="支付宝捐赠码" width="200" />
+</p>
 
 ---
