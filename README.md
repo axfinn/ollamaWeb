@@ -1,31 +1,43 @@
 # Ollama Web Interface
 
 <div align="center">
-  <img src="./img/logo.png" alt="Ollama Web Interface Logo" width="200">
+  <img src="./img/ollama_web_logo.png" alt="Ollama Web Interface Logo" width="200">
 </div>
 
-一个基于 Ollama API 的 Web 界面，支持模型选择、连续对话和参数配置。
+一个基于 Ollama API 的现代化 Web 界面，支持模型选择、连续对话和参数配置
 
 <div align="center">
 
 [![License](https://img.shields.io/github/license/axfinn/ollamaWeb)](LICENSE)
-[![Version](https://img.shields.io/github/package-json/v/axfinn/ollamaWeb)](package.json)
-[![Ollama](https://img.shields.io/badge/Ollama-API-orange)](https://github.com/ollama/ollama)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/axfinn/ollamaWeb?filename=ollamaWeb%2Fpackage.json)
+[![Stars](https://img.shields.io/github/stars/axfinn/ollamaWeb)](https://github.com/axfinn/ollamaWeb/stargazers)
 
 </div>
 
-## 功能特性
+## 🌟 特性
 
-- 🤖 多模型支持 - 自动获取并展示所有可用的 Ollama 模型
-- 💬 连续对话 - 支持上下文关联的多轮对话
-- ⚙️ 参数配置 - 可调节 Temperature 和 Max Tokens 参数
-- 🌐 API 配置 - 支持自定义 Ollama API 地址
-- 📝 Markdown 渲染 - 完整支持 Markdown 语法渲染
-- 📊 流程图支持 - 支持 Mermaid.js 流程图渲染
-- 📁 会话管理 - 多标签页会话管理，支持创建、切换、重命名和删除
-- 📱 响应式设计 - 适配桌面端和移动端
-- 🔧 错误处理 - 完善的错误提示和解决方案建议
-- 🌍 国际化 - 中文界面，符合中文用户习惯
+- 🤖 **多模型支持** - 支持 Llama、Mistral、CodeLlama 等多种模型
+- 💬 **连续对话** - 保持上下文的多轮对话
+- ⚙️ **参数配置** - 可调节 Temperature、Max Tokens 等参数
+- 📝 **Markdown 渲染** - 支持代码高亮、Mermaid 图表等
+- 🌐 **API 配置** - 支持自定义 Ollama API 地址
+- 📁 **会话管理** - 多标签页会话管理
+- 🎨 **现代化界面** - 使用 Tailwind CSS 构建的响应式 UI
+- 🌈 **代码高亮** - 支持多种编程语言的语法高亮
+- 📊 **图表支持** - 支持 Mermaid 流程图、时序图等
+
+## 📸 界面预览
+
+### Markdown 渲染效果
+支持代码高亮和 Mermaid 图表渲染：
+``mermaid
+graph TD
+  A[用户输入] --> B(Ollama API)
+  B --> C{响应处理}
+  C --> D[Markdown 渲染]
+  C --> E[代码高亮]
+  C --> F[图表生成]
+```
 
 ## 快速开始
 

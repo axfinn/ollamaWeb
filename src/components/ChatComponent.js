@@ -5,10 +5,35 @@
 
 import OllamaAPI from '../utils/ollama.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import hljs from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/highlight.min.js';
+import javascript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.min.js';
+import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/python.min.js';
+import java from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/java.min.js';
+import html from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/xml.min.js';
+import css from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/css.min.js';
+import json from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/json.min.js';
+import yaml from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/yaml.min.js';
+import bash from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/bash.min.js';
+import sql from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/sql.min.js';
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 
+// 注册语言
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('java', java);
+hljs.registerLanguage('html', html);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('yaml', yaml);
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('sql', sql);
+
 // 初始化mermaid
-mermaid.initialize({ startOnLoad: false });
+mermaid.initialize({ 
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose'
+});
 
 class ChatComponent {
   /**
@@ -195,10 +220,10 @@ class ChatComponent {
     
     this.sessions.forEach(session => {
       const tabContainer = document.createElement('div');
-      tabContainer.className = 'session-tab-container';
+      tabContainer.className = 'session-tab-container flex';
       
       const tab = document.createElement('div');
-      tab.className = `session-tab ${session.id === this.currentSessionId ? 'active' : ''}`;
+      tab.className = `session-tab px-3 py-1 rounded-t-lg cursor-pointer text-sm ${session.id === this.currentSessionId ? 'active' : ''}`;
       tab.textContent = session.name;
       tab.dataset.sessionId = session.id;
       
@@ -218,8 +243,8 @@ class ChatComponent {
       
       // 添加删除按钮
       const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'delete-session-btn';
-      deleteBtn.textContent = '×';
+      deleteBtn.className = 'delete-session-btn w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-r-lg';
+      deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
       deleteBtn.dataset.sessionId = session.id;
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -250,7 +275,7 @@ class ChatComponent {
     
     if (messages.length === 0) {
       const welcomeMessage = document.createElement('div');
-      welcomeMessage.className = 'message system-message';
+      welcomeMessage.className = 'message system-message rounded-lg p-4 mx-auto';
       welcomeMessage.innerHTML = `
         <div class="message-content">
           欢迎使用 Ollama Web Interface！请选择模型并开始对话。
@@ -282,7 +307,7 @@ class ChatComponent {
         const code = codeBlock.textContent;
         const { svg, bindFunctions } = await mermaid.render(`mermaid-${Date.now()}-${index}`, code);
         const diagramDiv = document.createElement('div');
-        diagramDiv.className = 'mermaid-diagram';
+        diagramDiv.className = 'mermaid-diagram my-4 p-4 bg-white rounded-lg shadow';
         diagramDiv.innerHTML = svg;
         codeBlock.parentNode.replaceWith(diagramDiv);
       } catch (error) {
@@ -338,9 +363,8 @@ class ChatComponent {
     
     // 添加刷新模型按钮事件
     const refreshBtn = document.createElement('button');
-    refreshBtn.textContent = '刷新模型';
-    refreshBtn.className = 'btn btn-primary';
-    refreshBtn.style.marginLeft = '10px';
+    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    refreshBtn.className = 'ml-2 bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center transition';
     refreshBtn.addEventListener('click', () => this.refreshModels());
     
     // 将刷新按钮添加到模型选择器旁边
@@ -441,14 +465,14 @@ class ChatComponent {
     try {
       // 显示加载状态
       const refreshBtn = this.modelSelect.nextElementSibling;
-      const originalText = refreshBtn.textContent;
-      refreshBtn.textContent = '刷新中...';
+      const originalHTML = refreshBtn.innerHTML;
+      refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       
       const models = await this.ollamaAPI.refreshModels();
       this.updateModelList(models);
       
       // 恢复按钮文本
-      refreshBtn.textContent = '刷新模型';
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
       
       this.addMessageToUI('system', '模型列表已更新');
     } catch (error) {
@@ -458,7 +482,7 @@ class ChatComponent {
       // 恢复按钮文本
       const refreshBtn = this.modelSelect.nextElementSibling;
       if (refreshBtn) {
-        refreshBtn.textContent = '刷新模型';
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
       }
     }
   }
@@ -591,6 +615,12 @@ class ChatComponent {
     // 如果是助手消息，解析Markdown
     if (role === 'assistant') {
       contentDiv.innerHTML = this.renderMarkdown(content);
+      // 代码高亮
+      contentDiv.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    } else if (role === 'user') {
+      contentDiv.textContent = content;
     } else {
       contentDiv.textContent = content;
     }
@@ -617,7 +647,7 @@ class ChatComponent {
    * @returns {string} 渲染后的HTML
    */
   renderMarkdown(content) {
-    // 自定义渲染器以支持Mermaid图表
+    // 自定义渲染器以支持Mermaid图表和代码高亮
     const renderer = new marked.Renderer();
     
     // 保存原始的代码渲染方法
@@ -628,7 +658,9 @@ class ChatComponent {
       if (infostring === 'mermaid') {
         return `<pre class="mermaid-code"><code class="language-mermaid">${code}</code></pre>`;
       }
-      return originalCode.call(this, code, infostring, escaped);
+      // 为其他代码块添加hljs类
+      const lang = infostring || 'plaintext';
+      return `<pre><code class="language-${lang} hljs">${code}</code></pre>`;
     };
     
     // 配置marked选项
@@ -642,7 +674,7 @@ class ChatComponent {
       smartypants: false
     });
     
-    return marked.parse(content);
+    return `<div class="markdown-content">${marked.parse(content)}</div>`;
   }
   
   /**
@@ -655,7 +687,13 @@ class ChatComponent {
     
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('message-content');
-    contentDiv.innerHTML = '<div class="loading"></div> 正在思考中...';
+    contentDiv.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
     
     loadingDiv.appendChild(contentDiv);
     this.chatHistory.appendChild(loadingDiv);
