@@ -6,7 +6,7 @@
 
 一个现代化的 Web 界面，用于与 [Ollama](https://ollama.ai) 本地 AI 模型进行交互。支持模型选择、连续对话和参数配置。
 
-![界面预览](docs/screenshot.png)
+![界面预览](./img/screenshot.png)
 
 ## 功能特性
 
@@ -17,6 +17,18 @@
 - 🌙 **暗色主题** - 舒适的夜间使用体验
 - 🔧 **开发者友好** - 基于现代前端工具链构建
 - 🌐 **可配置的API地址** - 支持自定义 Ollama 服务地址
+- 📁 **多会话管理** - 支持创建、切换和管理多个独立对话会话
+- 📝 **Markdown渲染** - 完美支持大模型返回的 Markdown 内容解析展示
+
+## 开源仓库
+
+本项目为开源项目，您可以在 GitHub 上查看、贡献或提出问题：
+
+- **仓库地址**: [https://github.com/axfinn/ollamaWeb](https://github.com/axfinn/ollamaWeb)
+- **许可证**: [MIT License](https://github.com/axfinn/ollamaWeb/blob/main/LICENSE)
+- **贡献指南**: 欢迎提交 Issue 和 Pull Request
+
+如果您觉得这个项目有用，请考虑给我们的仓库点个 Star ⭐！
 
 ## 目录
 

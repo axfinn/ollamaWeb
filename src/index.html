@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ollama Web Interface</title>
     <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
 </head>
 <body>
     <div id="app">
         <header class="app-header">
             <h1>Ollama Web Interface</h1>
+            <div class="github-link">
+                <a href="https://github.com/axfinn/ollamaWeb" target="_blank" rel="noopener noreferrer">
+                    📂 查看 GitHub 仓库
+                </a>
+            </div>
         </header>
         
         <main class="app-main">
@@ -45,10 +51,16 @@
             </div>
             
             <div class="chat-container">
-                <div class="chat-history" id="chat-history">
-                    <div class="message system-message">
-                        <div class="message-content">
-                            欢迎使用 Ollama Web Interface！请选择模型并开始对话。
+                <div class="session-tabs">
+                    <div class="tabs-header">
+                        <div id="session-tabs" class="tabs-list"></div>
+                        <button id="new-session-btn" class="btn btn-primary">+</button>
+                    </div>
+                    <div class="chat-history markdown-body" id="chat-history">
+                        <div class="message system-message">
+                            <div class="message-content">
+                                欢迎使用 Ollama Web Interface！请选择模型并开始对话。
+                            </div>
                         </div>
                     </div>
                 </div>

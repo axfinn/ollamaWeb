@@ -4,6 +4,7 @@
  */
 
 import OllamaAPI from '../utils/ollama.js';
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
 class ChatComponent {
   /**
@@ -26,9 +27,16 @@ class ChatComponent {
     this.maxTokensInput = document.getElementById('max-tokens');
     // API配置相关元素
     this.apiHostInput = document.getElementById('api-host');
-    this.saveApiHostButton = document.getElementById('save-api-host');
+    this.saveApiHostButton = document.getElementById('save-apiHost-button');
     
-    this.messages = [];
+    // 会话标签页相关元素
+    this.sessionTabs = document.getElementById('session-tabs');
+    this.newSessionButton = document.getElementById('new-session-btn');
+    
+    this.sessions = [];
+    this.currentSessionId = null;
+    this.sessionCounter = 1;
+    
     this.ollamaAPI = new OllamaAPI();
     
     this.init();
@@ -41,6 +49,9 @@ class ChatComponent {
     // 从localStorage加载保存的API地址
     this.loadSavedApiHost();
     
+    // 从localStorage加载会话数据
+    this.loadSessions();
+    
     // 绑定事件
     this.bindEvents();
     
@@ -49,6 +60,16 @@ class ChatComponent {
     
     // 加载模型列表
     this.loadModels();
+    
+    // 创建初始会话
+    if (this.sessions.length === 0) {
+      this.createSession();
+    } else {
+      this.switchToSession(this.sessions[0].id);
+    }
+    
+    // 更新标签页显示
+    this.renderSessionTabs();
   }
   
   /**
@@ -64,6 +85,163 @@ class ChatComponent {
       // 如果没有保存的API地址，则使用默认值或环境变量
       this.apiHostInput.value = this.ollamaAPI.baseUrl;
     }
+  }
+  
+  /**
+   * 从localStorage加载会话数据
+   */
+  loadSessions() {
+    const savedSessions = localStorage.getItem('ollama-sessions');
+    if (savedSessions) {
+      this.sessions = JSON.parse(savedSessions);
+      // 更新会话计数器，避免ID冲突
+      this.sessionCounter = Math.max(...this.sessions.map(s => s.id), 0) + 1;
+    }
+  }
+  
+  /**
+   * 保存会话数据到localStorage
+   */
+  saveSessions() {
+    localStorage.setItem('ollama-sessions', JSON.stringify(this.sessions));
+  }
+  
+  /**
+   * 创建新会话
+   */
+  createSession() {
+    const sessionId = this.sessionCounter++;
+    const session = {
+      id: sessionId,
+      name: `会话 ${sessionId}`,
+      messages: [],
+      createdAt: new Date().toISOString()
+    };
+    
+    this.sessions.push(session);
+    this.switchToSession(sessionId);
+    this.saveSessions();
+    this.renderSessionTabs();
+  }
+  
+  /**
+   * 切换到指定会话
+   * @param {number} sessionId - 会话ID
+   */
+  switchToSession(sessionId) {
+    // 更新当前会话ID
+    this.currentSessionId = sessionId;
+    
+    // 获取当前会话
+    const session = this.sessions.find(s => s.id === sessionId);
+    if (!session) return;
+    
+    // 更新界面显示
+    this.renderMessages(session.messages);
+    
+    // 更新标签页激活状态
+    this.renderSessionTabs();
+  }
+  
+  /**
+   * 删除会话
+   * @param {number} sessionId - 会话ID
+   */
+  deleteSession(sessionId) {
+    if (this.sessions.length <= 1) {
+      alert('至少需要保留一个会话');
+      return;
+    }
+    
+    // 删除会话
+    this.sessions = this.sessions.filter(s => s.id !== sessionId);
+    
+    // 如果删除的是当前会话，切换到第一个会话
+    if (this.currentSessionId === sessionId) {
+      this.switchToSession(this.sessions[0].id);
+    }
+    
+    this.saveSessions();
+    this.renderSessionTabs();
+  }
+  
+  /**
+   * 重命名会话
+   * @param {number} sessionId - 会话ID
+   * @param {string} newName - 新名称
+   */
+  renameSession(sessionId, newName) {
+    const session = this.sessions.find(s => s.id === sessionId);
+    if (session) {
+      session.name = newName;
+      this.saveSessions();
+      this.renderSessionTabs();
+    }
+  }
+  
+  /**
+   * 渲染会话标签页
+   */
+  renderSessionTabs() {
+    this.sessionTabs.innerHTML = '';
+    
+    this.sessions.forEach(session => {
+      const tab = document.createElement('div');
+      tab.className = `session-tab ${session.id === this.currentSessionId ? 'active' : ''}`;
+      tab.textContent = session.name;
+      tab.dataset.sessionId = session.id;
+      
+      tab.addEventListener('click', (e) => {
+        const sessionId = parseInt(e.currentTarget.dataset.sessionId);
+        this.switchToSession(sessionId);
+      });
+      
+      // 添加右键菜单事件
+      tab.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const newName = prompt('请输入新的会话名称:', session.name);
+        if (newName) {
+          this.renameSession(session.id, newName);
+        }
+      });
+      
+      this.sessionTabs.appendChild(tab);
+    });
+  }
+  
+  /**
+   * 渲染消息
+   * @param {Array} messages - 消息列表
+   */
+  renderMessages(messages) {
+    this.chatHistory.innerHTML = '';
+    
+    if (messages.length === 0) {
+      const welcomeMessage = document.createElement('div');
+      welcomeMessage.className = 'message system-message';
+      welcomeMessage.innerHTML = `
+        <div class="message-content">
+          欢迎使用 Ollama Web Interface！请选择模型并开始对话。
+        </div>
+      `;
+      this.chatHistory.appendChild(welcomeMessage);
+      return;
+    }
+    
+    messages.forEach(message => {
+      this.addMessageToUI(message.role, message.content, false);
+    });
+    
+    // 滚动到底部
+    this.scrollToBottom();
+  }
+  
+  /**
+   * 获取当前会话
+   * @returns {Object} 当前会话对象
+   */
+  getCurrentSession() {
+    return this.sessions.find(s => s.id === this.currentSessionId);
   }
   
   /**
@@ -99,6 +277,9 @@ class ChatComponent {
     // 将刷新按钮添加到模型选择器旁边
     const modelSelectParent = this.modelSelect.parentNode;
     modelSelectParent.appendChild(refreshBtn);
+    
+    // 会话标签页事件
+    this.newSessionButton.addEventListener('click', () => this.createSession());
   }
   
   /**
@@ -212,9 +393,13 @@ class ChatComponent {
       return;
     }
     
-    // 添加用户消息到界面
+    const currentSession = this.getCurrentSession();
+    if (!currentSession) return;
+    
+    // 添加用户消息到界面和会话
     this.addMessageToUI('user', message);
-    this.messages.push({ role: 'user', content: message });
+    currentSession.messages.push({ role: 'user', content: message });
+    this.saveSessions();
     
     // 清空输入框
     this.userInput.value = '';
@@ -231,16 +416,17 @@ class ChatComponent {
       // 调用Ollama API
       const response = await this.ollamaAPI.chat(
         model, 
-        this.messages, 
+        currentSession.messages, 
         { temperature, maxTokens }
       );
       
       // 移除加载状态
       loadingElement.remove();
       
-      // 添加助手消息到界面
+      // 添加助手消息到界面和会话
       this.addMessageToUI('assistant', response);
-      this.messages.push({ role: 'assistant', content: response });
+      currentSession.messages.push({ role: 'assistant', content: response });
+      this.saveSessions();
       
     } catch (error) {
       // 移除加载状态
@@ -272,20 +458,29 @@ class ChatComponent {
    * 添加消息到界面
    * @param {string} role - 消息发送者角色
    * @param {string} content - 消息内容
+   * @param {boolean} scrollToBottom - 是否滚动到底部
    */
-  addMessageToUI(role, content) {
+  addMessageToUI(role, content, scrollToBottom = true) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', `${role}-message`);
     
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('message-content');
-    contentDiv.textContent = content;
+    
+    // 如果是助手消息，解析Markdown
+    if (role === 'assistant') {
+      contentDiv.innerHTML = marked.parse(content);
+    } else {
+      contentDiv.textContent = content;
+    }
     
     messageDiv.appendChild(contentDiv);
     this.chatHistory.appendChild(messageDiv);
     
     // 滚动到底部
-    this.scrollToBottom();
+    if (scrollToBottom) {
+      this.scrollToBottom();
+    }
   }
   
   /**
@@ -317,17 +512,15 @@ class ChatComponent {
   }
   
   /**
-   * 清空聊天记录
+   * 清空当前会话的聊天记录
    */
   clearChat() {
-    this.chatHistory.innerHTML = `
-      <div class="message system-message">
-        <div class="message-content">
-          对话已清空。请选择模型并开始新的对话。
-        </div>
-      </div>
-    `;
-    this.messages = [];
+    const currentSession = this.getCurrentSession();
+    if (currentSession) {
+      currentSession.messages = [];
+      this.saveSessions();
+      this.renderMessages([]);
+    }
   }
 }
 
