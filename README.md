@@ -38,7 +38,7 @@
 
 ### 安装
 
-```bash
+```
 # 克隆项目
 git clone https://github.com/axfinn/ollamaWeb.git
 cd ollamaWeb
@@ -49,7 +49,7 @@ npm install
 
 ### 启动开发服务器
 
-```bash
+```
 # 启动开发服务器
 npm run dev
 
@@ -58,7 +58,7 @@ npm run dev
 
 ### 构建生产版本
 
-```bash
+```
 # 构建生产版本
 npm run build
 
@@ -131,7 +131,7 @@ npm run build
 
 ### Docker 部署 (可选)
 
-```bash
+```
 # 构建镜像
 docker build -t ollama-web .
 
@@ -230,11 +230,11 @@ API 调用包含完整的错误处理机制，会在界面上显示友好的错�
 <div align="center">
   <div style="display: flex; justify-content: center; gap: 50px; margin: 20px 0;">
     <div>
-      <img src="img/wxpay.JPG" alt="微信捐赠码" width="200" />
+      <img src="./img/wxpay.JPG" alt="微信捐赠码" width="200" />
       <p>微信捐赠</p>
     </div>
     <div>
-      <img src="img/alipay.JPG" alt="支付宝捐赠码" width="200" />
+      <img src="./img/alipay.JPG" alt="支付宝捐赠码" width="200" />
       <p>支付宝捐赠</p>
     </div>
   </div>
