@@ -80,7 +80,10 @@ class ChatComponent {
    */
   init() {
     // 从localStorage加载保存的API地址
-    this.loadSavedApiHost();
+    const savedApiHost = this.loadSavedApiHost();
+    
+    // 创建OllamaAPI实例
+    this.ollamaAPI = new OllamaAPI(savedApiHost);
     
     // 从localStorage加载会话数据
     this.loadSessions();
@@ -90,6 +93,9 @@ class ChatComponent {
     
     // 初始化参数显示
     this.temperatureValue.textContent = this.temperatureSlider.value;
+    
+    // 创建OllamaAPI实例
+    this.ollamaAPI = new OllamaAPI();
     
     // 加载模型列表
     this.loadModels();
@@ -119,12 +125,9 @@ class ChatComponent {
     const savedApiHost = localStorage.getItem('ollama-api-host');
     if (savedApiHost) {
       this.apiHostInput.value = savedApiHost;
-      // 更新API实例的baseUrl
-      this.ollamaAPI.updateBaseUrl(savedApiHost);
-    } else {
-      // 如果没有保存的API地址，则使用默认值或环境变量
-      this.apiHostInput.value = this.ollamaAPI.baseUrl;
+      return savedApiHost;
     }
+    return null;
   }
   
   /**
@@ -162,6 +165,9 @@ class ChatComponent {
     this.saveSessions();
     this.switchToSession(sessionId);
     this.renderSessionTabs();
+    
+    // 添加反馈消息
+    this.addMessageToUI('system', `已创建新会话: ${session.name}`);
   }
   
   /**
@@ -271,6 +277,14 @@ class ChatComponent {
       tabContainer.appendChild(deleteBtn);
       this.sessionTabs.appendChild(tabContainer);
     });
+    
+    // 确保当前会话标签可见
+    if (this.currentSessionId && this.sessionTabs.children.length > 0) {
+      const currentTabContainer = this.sessionTabs.children[this.sessionCounter - 1];
+      if (currentTabContainer) {
+        currentTabContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      }
+    }
   }
   
   /**
@@ -378,8 +392,30 @@ class ChatComponent {
     const modelSelectParent = this.modelSelect.parentNode;
     modelSelectParent.appendChild(refreshBtn);
     
-    // 会话标签页事件
-    this.newSessionButton.addEventListener('click', () => this.createSession());
+    // 会话标签页事件 - 使用事件委托和防抖处理
+    if (this.newSessionButton) {
+      // 添加防抖处理
+      let isProcessing = false;
+      this.newSessionButton.addEventListener('click', (e) => {
+        if (!isProcessing) {
+          isProcessing = true;
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // 执行创建会话操作
+          this.createSession();
+          
+          // 重置标志位
+          setTimeout(() => {
+            isProcessing = false;
+          }, 300);
+        }
+      });
+    } else {
+      // 如果按钮不存在，添加错误提示
+      console.error('新会话按钮未找到，无法绑定事件');
+      this.addSystemMessage('错误：新会话按钮未找到，无法绑定事件');
+    }
   }
   
   /**
@@ -437,8 +473,9 @@ class ChatComponent {
     const apiHost = this.apiHostInput.value.trim();
     if (apiHost) {
       localStorage.setItem('ollama-api-host', apiHost);
-      // 更新API实例的baseUrl
-      this.ollamaAPI.updateBaseUrl(apiHost);
+      
+      // 更新OllamaAPI实例
+      this.ollamaAPI = new OllamaAPI(apiHost);
       
       // 显示保存成功的提示
       this.addMessageToUI('system', `API地址已保存并立即生效: ${apiHost}`);
@@ -456,6 +493,11 @@ class ChatComponent {
    */
   async loadModels() {
     try {
+      // 确保API实例存在
+      if (!this.ollamaAPI) {
+        this.ollamaAPI = new OllamaAPI();
+      }
+      
       const models = await this.ollamaAPI.getModels();
       this.updateModelList(models);
     } catch (error) {
@@ -465,7 +507,7 @@ class ChatComponent {
       // 提供解决方案建议
       this.addMessageToUI('system', '解决建议:');
       this.addMessageToUI('system', '1. 确保 Ollama 服务正在运行');
-      this.addMessageToUI('system', '2. 检查 API 地址是否正确 (当前: ' + this.ollamaAPI.baseUrl + ')');
+      this.addMessageToUI('system', '2. 检查 API 地址是否正确');
       this.addMessageToUI('system', '3. 如果是跨域问题，请配置 Ollama 服务允许 CORS 或使用代理');
       this.addMessageToUI('system', '4. 检查防火墙设置是否阻止了连接');
     }
@@ -475,28 +517,31 @@ class ChatComponent {
    * 刷新模型列表
    */
   async refreshModels() {
+    const refreshBtn = this.modelSelect.nextElementSibling;
+    const originalHTML = refreshBtn.innerHTML;
+    
     try {
       // 显示加载状态
-      const refreshBtn = this.modelSelect.nextElementSibling;
-      const originalHTML = refreshBtn.innerHTML;
       refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       
       const models = await this.ollamaAPI.refreshModels();
       this.updateModelList(models);
-      
-      // 恢复按钮文本
-      refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
       
       this.addMessageToUI('system', '模型列表已更新');
     } catch (error) {
       console.error('刷新模型列表失败:', error);
       this.addMessageToUI('system', `错误: ${error.message}`);
       
-      // 恢复按钮文本
-      const refreshBtn = this.modelSelect.nextElementSibling;
-      if (refreshBtn) {
-        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+      // 提供解决方案建议
+      if (error.message.includes('CORS') || error.message.includes('连接')) {
+        this.addMessageToUI('system', '解决建议:');
+        this.addMessageToUI('system', '1. 检查 Ollama 服务是否正在运行');
+        this.addMessageToUI('system', '2. 确保 API 地址配置正确');
+        this.addMessageToUI('system', '3. 如果是跨域问题，请配置 Ollama 服务允许 CORS');
       }
+    } finally {
+      // 无论成功或失败都恢复按钮文本
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
     }
   }
   

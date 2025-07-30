@@ -60,10 +60,35 @@ class OllamaAPI {
    * @param {string} newBaseUrl - 新的基础URL
    */
   updateBaseUrl(newBaseUrl) {
-    this.baseUrl = newBaseUrl;
-    // 重新判断是否使用代理
-    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
+    // 参数验证
+    if (!newBaseUrl || typeof newBaseUrl !== 'string') {
+      console.warn('无效的基础URL:', newBaseUrl);
+      return;
+    }
+    
+    // 移除末尾的斜杠（如果有）
+    this.baseUrl = newBaseUrl.replace(/\/+$/, '');
+    
+    // 更新代理使用状态
+    this.useProxy = this._shouldUseProxy();
+    
+    // 重新初始化所有API端点
     this.initEndpoints();
+  }
+
+  /**
+   * 判断是否应该使用代理
+   * @returns {boolean} 是否使用代理
+   */
+  _shouldUseProxy() {
+    if (!import.meta.env?.DEV) return false;
+    try {
+      const baseUrlHost = new URL(this.baseUrl).hostname;
+      return !baseUrlHost.includes(window.location.hostname);
+    } catch (e) {
+      console.warn('URL解析失败:', e);
+      return false;
+    }
   }
 
   /**
@@ -75,6 +100,15 @@ class OllamaAPI {
     // 重新判断是否使用代理
     this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
+  }
+
+  /**
+   * 刷新模型列表
+   * @returns {Promise<Array>} 模型列表
+   */
+  async refreshModels() {
+    // 重新加载模型列表
+    return await this.getModels();
   }
 
   /**
@@ -114,15 +148,6 @@ class OllamaAPI {
       
       throw new Error(errorMessage);
     }
-  }
-
-  /**
-   * 刷新模型列表
-   * @returns {Promise<Array>} 模型列表
-   */
-  async refreshModels() {
-    // 重新加载模型列表
-    return await this.getModels();
   }
 
   /**
