@@ -5,7 +5,7 @@
 
 import OllamaAPI from '../utils/ollama.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
-import hljs from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/highlight.min.js';
+import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js';
 import javascript from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/javascript.min.js';
 import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/python.min.js';
 import java from 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/languages/java.min.js';
