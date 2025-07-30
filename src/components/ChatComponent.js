@@ -5,6 +5,10 @@
 
 import OllamaAPI from '../utils/ollama.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+// 初始化mermaid
+mermaid.initialize({ startOnLoad: false });
 
 class ChatComponent {
   /**
@@ -234,6 +238,29 @@ class ChatComponent {
     
     // 滚动到底部
     this.scrollToBottom();
+    
+    // 渲染流程图
+    this.renderDiagrams();
+  }
+  
+  /**
+   * 渲染流程图等图表
+   */
+  async renderDiagrams() {
+    // 获取所有包含mermaid图表的代码块
+    const codeBlocks = this.chatHistory.querySelectorAll('pre code.language-mermaid');
+    codeBlocks.forEach(async (codeBlock, index) => {
+      try {
+        const code = codeBlock.textContent;
+        const { svg, bindFunctions } = await mermaid.render(`mermaid-${Date.now()}-${index}`, code);
+        const diagramDiv = document.createElement('div');
+        diagramDiv.className = 'mermaid-diagram';
+        diagramDiv.innerHTML = svg;
+        codeBlock.parentNode.replaceWith(diagramDiv);
+      } catch (error) {
+        console.error('渲染Mermaid图表失败:', error);
+      }
+    });
   }
   
   /**
@@ -469,7 +496,7 @@ class ChatComponent {
     
     // 如果是助手消息，解析Markdown
     if (role === 'assistant') {
-      contentDiv.innerHTML = marked.parse(content);
+      contentDiv.innerHTML = this.renderMarkdown(content);
     } else {
       contentDiv.textContent = content;
     }
@@ -481,6 +508,47 @@ class ChatComponent {
     if (scrollToBottom) {
       this.scrollToBottom();
     }
+    
+    // 如果是助手消息，渲染其中可能包含的图表
+    if (role === 'assistant') {
+      setTimeout(() => {
+        this.renderDiagrams();
+      }, 100);
+    }
+  }
+  
+  /**
+   * 渲染Markdown内容
+   * @param {string} content - Markdown内容
+   * @returns {string} 渲染后的HTML
+   */
+  renderMarkdown(content) {
+    // 自定义渲染器以支持Mermaid图表
+    const renderer = new marked.Renderer();
+    
+    // 保存原始的代码渲染方法
+    const originalCode = renderer.code;
+    
+    // 重写代码块渲染方法，为mermaid代码块添加特殊标识
+    renderer.code = function(code, infostring, escaped) {
+      if (infostring === 'mermaid') {
+        return `<pre class="mermaid-code"><code class="language-mermaid">${code}</code></pre>`;
+      }
+      return originalCode.call(this, code, infostring, escaped);
+    };
+    
+    // 配置marked选项
+    marked.setOptions({
+      renderer: renderer,
+      gfm: true,
+      breaks: false,
+      pedantic: false,
+      sanitize: false,
+      smartLists: true,
+      smartypants: false
+    });
+    
+    return marked.parse(content);
   }
   
   /**
