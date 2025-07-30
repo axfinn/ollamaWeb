@@ -5,6 +5,12 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.4.3] - 2025-08-10
+
+### 优化
+- 更新 README.md，添加"请作者喝杯咖啡"部分，增加项目亲和力
+- 添加 logo.png 图片资源
+
 ## [1.4.2] - 2025-08-09
 
 ### 新增
