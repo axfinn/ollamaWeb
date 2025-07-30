@@ -24,14 +24,13 @@ class ChatComponent {
     this.temperatureSlider = document.getElementById('temperature');
     this.temperatureValue = document.getElementById('temperature-value');
     this.maxTokensInput = document.getElementById('max-tokens');
+    
+    // 获取可能存在的 API 地址配置输入框
     this.apiHostInput = document.getElementById('api-host');
     this.saveApiConfigButton = document.getElementById('save-api-config');
     
     this.messages = [];
     this.ollamaAPI = new OllamaAPI();
-    
-    // 加载保存的 API 配置
-    this.loadApiConfig();
     
     this.init();
   }
@@ -46,9 +45,6 @@ class ChatComponent {
     // 初始化参数显示
     this.temperatureValue.textContent = this.temperatureSlider.value;
     
-    // 设置 API host 输入框的值
-    this.apiHostInput.value = this.ollamaAPI.getBaseUrl();
-    
     // 加载模型列表
     this.loadModels();
   }
@@ -59,8 +55,6 @@ class ChatComponent {
   bindEvents() {
     this.sendButton.addEventListener('click', () => this.sendMessage());
     this.clearButton.addEventListener('click', () => this.clearChat());
-    this.saveApiConfigButton.addEventListener('click', () => this.saveApiConfig());
-    
     this.userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -71,16 +65,17 @@ class ChatComponent {
     this.temperatureSlider.addEventListener('input', () => {
       this.temperatureValue.textContent = this.temperatureSlider.value;
     });
-  }
-  
-  /**
-   * 加载 API 配置
-   */
-  loadApiConfig() {
-    const savedConfig = localStorage.getItem('ollamaApiConfig');
-    if (savedConfig) {
-      const config = JSON.parse(savedConfig);
-      this.ollamaAPI.setBaseUrl(config.host);
+    
+    // 如果存在 API 配置相关元素，绑定相应事件
+    if (this.apiHostInput && this.saveApiConfigButton) {
+      this.saveApiConfigButton.addEventListener('click', () => this.saveApiConfig());
+      
+      // 如果有本地存储的 API 地址，加载它
+      const savedApiHost = localStorage.getItem('ollamaApiHost');
+      if (savedApiHost) {
+        this.apiHostInput.value = savedApiHost;
+        this.ollamaAPI.baseUrl = savedApiHost;
+      }
     }
   }
   
@@ -88,17 +83,20 @@ class ChatComponent {
    * 保存 API 配置
    */
   saveApiConfig() {
-    const host = this.apiHostInput.value.trim() || 'http://localhost:11434';
-    this.ollamaAPI.setBaseUrl(host);
-    
-    // 保存到 localStorage
-    localStorage.setItem('ollamaApiConfig', JSON.stringify({ host }));
-    
-    // 显示保存成功的消息
-    this.addMessageToUI('system', `API 配置已保存: ${host}`);
-    
-    // 重新加载模型列表
-    this.loadModels();
+    if (this.apiHostInput) {
+      const apiHost = this.apiHostInput.value.trim();
+      if (apiHost) {
+        // 保存到本地存储
+        localStorage.setItem('ollamaApiHost', apiHost);
+        // 更新 OllamaAPI 实例的 baseUrl
+        this.ollamaAPI.baseUrl = apiHost;
+        // 重新加载模型列表
+        this.loadModels();
+        
+        // 显示保存成功的提示
+        this.addSystemMessage('API 配置已保存并应用');
+      }
+    }
   }
   
   /**
@@ -109,7 +107,6 @@ class ChatComponent {
       const models = await this.ollamaAPI.getModels();
       // 清空现有选项
       this.modelSelect.innerHTML = '';
-      
       // 添加新选项
       models.forEach(model => {
         const option = document.createElement('option');
@@ -119,8 +116,7 @@ class ChatComponent {
       });
     } catch (error) {
       console.error('加载模型列表失败:', error);
-      // 出错时保留默认选项
-      this.addMessageToUI('system', `加载模型列表失败: ${error.message}`);
+      this.addSystemMessage(`加载模型列表失败: ${error.message}`);
     }
   }
   

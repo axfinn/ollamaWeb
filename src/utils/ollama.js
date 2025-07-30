@@ -9,25 +9,46 @@ class OllamaAPI {
    * @param {string} baseUrl - Ollama服务的基础URL
    */
   constructor(baseUrl = 'http://localhost:11434') {
-    this.baseUrl = baseUrl;
-    this.chatEndpoint = `${this.baseUrl}/api/chat`;
+    // 尝试从环境变量获取 baseUrl
+    this._baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
+    this.updateEndpoints();
   }
 
   /**
-   * 设置基础 URL
-   * @param {string} baseUrl - 新的基础 URL
+   * 更新所有端点URL
    */
-  setBaseUrl(baseUrl) {
-    this.baseUrl = baseUrl;
-    this.chatEndpoint = `${this.baseUrl}/api/chat`;
+  updateEndpoints() {
+    this.chatEndpoint = `${this._baseUrl}/api/chat`;
+    this.tagsEndpoint = `${this._baseUrl}/api/tags`;
+    this.generateEndpoint = `${this._baseUrl}/api/generate`;
+    this.embeddingsEndpoint = `${this._baseUrl}/api/embeddings`;
+    this.psEndpoint = `${this._baseUrl}/api/ps`;
+    this.showEndpoint = `${this._baseUrl}/api/show`;
+    this.createEndpoint = `${this._baseUrl}/api/create`;
+    this.pullEndpoint = `${this._baseUrl}/api/pull`;
+    this.pushEndpoint = `${this._baseUrl}/api/push`;
+    this.copyEndpoint = `${this._baseUrl}/api/copy`;
+    this.deleteEndpoint = `${this._baseUrl}/api/delete`;
+    this.listEndpoint = `${this._baseUrl}/api/tags`;
+    this.embedEndpoint = `${this._baseUrl}/api/embed`;
+    this.blobsEndpoint = `${this._baseUrl}/api/blobs`;
   }
 
   /**
-   * 获取当前基础 URL
-   * @returns {string} 当前基础 URL
+   * 获取基础URL
+   * @returns {string} 基础URL
    */
-  getBaseUrl() {
-    return this.baseUrl;
+  get baseUrl() {
+    return this._baseUrl;
+  }
+
+  /**
+   * 设置基础URL
+   * @param {string} value - 新的基础URL
+   */
+  set baseUrl(value) {
+    this._baseUrl = value;
+    this.updateEndpoints();
   }
 
   /**
@@ -36,7 +57,7 @@ class OllamaAPI {
    */
   async getModels() {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const response = await fetch(this.tagsEndpoint);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -83,6 +104,365 @@ class OllamaAPI {
       return data.message.content;
     } catch (error) {
       console.error('聊天请求失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 生成文本内容
+   * @param {string} model - 模型名称
+   * @param {string} prompt - 提示词
+   * @param {Object} options - 配置选项
+   * @returns {Promise<string>} 生成的文本
+   */
+  async generate(model, prompt, options = {}) {
+    try {
+      const payload = {
+        model: model,
+        prompt: prompt,
+        stream: false,
+        options: options
+      };
+      
+      const response = await fetch(this.generateEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.response;
+    } catch (error) {
+      console.error('生成请求失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取嵌入向量 (新版本API)
+   * @param {string} model - 模型名称
+   * @param {string|Array} input - 输入文本或文本数组
+   * @returns {Promise<Object>} 嵌入结果
+   */
+  async embed(model, input) {
+    try {
+      const payload = {
+        model: model,
+        input: input
+      };
+      
+      const response = await fetch(this.embedEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('嵌入请求失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取嵌入向量 (旧版本API)
+   * @param {string} model - 模型名称
+   * @param {string} input - 输入文本
+   * @returns {Promise<Array>} 嵌入向量
+   */
+  async embeddings(model, input) {
+    try {
+      const payload = {
+        model: model,
+        prompt: input
+      };
+      
+      const response = await fetch(this.embeddingsEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.embedding;
+    } catch (error) {
+      console.error('嵌入请求失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取运行中的模型列表
+   * @returns {Promise<Array>} 运行中的模型列表
+   */
+  async ps() {
+    try {
+      const response = await fetch(this.psEndpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.models;
+    } catch (error) {
+      console.error('获取运行中模型列表失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取模型信息
+   * @param {string} model - 模型名称
+   * @returns {Promise<Object>} 模型信息
+   */
+  async show(model) {
+    try {
+      const payload = {
+        name: model
+      };
+      
+      const response = await fetch(this.showEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('获取模型信息失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 创建模型
+   * @param {string} model - 模型名称
+   * @param {string} path - 模型文件路径
+   * @param {Function} onProgress - 进度回调函数
+   * @returns {Promise<Object>} 创建结果
+   */
+  async create(model, path, onProgress) {
+    try {
+      const payload = {
+        name: model,
+        path: path,
+        stream: false
+      };
+      
+      const response = await fetch(this.createEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('创建模型失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 拉取模型
+   * @param {string} model - 模型名称
+   * @param {Function} onProgress - 进度回调函数
+   * @returns {Promise<Object>} 拉取结果
+   */
+  async pull(model, onProgress) {
+    try {
+      const payload = {
+        name: model,
+        stream: false
+      };
+      
+      const response = await fetch(this.pullEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('拉取模型失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 推送模型
+   * @param {string} model - 模型名称
+   * @param {Function} onProgress - 进度回调函数
+   * @returns {Promise<Object>} 推送结果
+   */
+  async push(model, onProgress) {
+    try {
+      const payload = {
+        name: model,
+        stream: false
+      };
+      
+      const response = await fetch(this.pushEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('推送模型失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 复制模型
+   * @param {string} source - 源模型名称
+   * @param {string} destination - 目标模型名称
+   * @returns {Promise<Object>} 复制结果
+   */
+  async copy(source, destination) {
+    try {
+      const payload = {
+        source: source,
+        destination: destination
+      };
+      
+      const response = await fetch(this.copyEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('复制模型失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 删除模型
+   * @param {string} model - 模型名称
+   * @returns {Promise<Object>} 删除结果
+   */
+  async delete(model) {
+    try {
+      const payload = {
+        name: model
+      };
+      
+      const response = await fetch(this.deleteEndpoint, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('删除模型失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 创建 Blob
+   * @param {string} digest - 摘要
+   * @param {Blob} blob - Blob 数据
+   * @returns {Promise<Object>} 创建结果
+   */
+  async createBlob(digest, blob) {
+    try {
+      const response = await fetch(`${this.blobsEndpoint}/${digest}`, {
+        method: 'POST',
+        body: blob
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('创建Blob失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 检查 Blob 是否存在
+   * @param {string} digest - 摘要
+   * @returns {Promise<boolean>} 是否存在
+   */
+  async headBlob(digest) {
+    try {
+      const response = await fetch(`${this.blobsEndpoint}/${digest}`, {
+        method: 'HEAD'
+      });
+      
+      return response.ok;
+    } catch (error) {
+      console.error('检查Blob失败:', error);
       throw error;
     }
   }
