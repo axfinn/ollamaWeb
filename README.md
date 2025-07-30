@@ -172,7 +172,7 @@ VITE_APP_TITLE=Ollama Web Interface
 
 ### API 调用示例
 
-``javascript
+```javascript
 // 获取模型列表
 const response = await fetch('/api/tags');
 const { models } = await response.json();
