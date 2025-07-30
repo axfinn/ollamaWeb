@@ -94,11 +94,18 @@ class ChatComponent {
     // 加载模型列表
     this.loadModels();
     
-    // 创建初始会话
+    // 创建或恢复初始会话
     if (this.sessions.length === 0) {
+      // 如果没有保存的会话，创建新会话
       this.createSession();
     } else {
-      this.switchToSession(this.sessions[0].id);
+      // 如果有保存的会话，切换到第一个会话
+      if (this.sessions[0]) {
+        this.switchToSession(this.sessions[0].id);
+      } else {
+        // 如果保存的会话数据无效，创建新会话
+        this.createSession();
+      }
     }
     
     // 更新标签页显示
@@ -152,8 +159,8 @@ class ChatComponent {
     };
     
     this.sessions.push(session);
-    this.switchToSession(sessionId);
     this.saveSessions();
+    this.switchToSession(sessionId);
     this.renderSessionTabs();
   }
   
@@ -223,7 +230,7 @@ class ChatComponent {
       tabContainer.className = 'session-tab-container flex';
       
       const tab = document.createElement('div');
-      tab.className = `session-tab px-3 py-1 rounded-t-lg cursor-pointer text-sm ${session.id === this.currentSessionId ? 'active' : ''}`;
+      tab.className = `session-tab px-3 py-1 rounded-t-lg cursor-pointer text-sm ${session.id === this.currentSessionId ? 'active bg-blue-500 text-white font-bold' : 'bg-gray-200 hover:bg-gray-300'}`;
       tab.textContent = session.name;
       tab.dataset.sessionId = session.id;
       
@@ -434,10 +441,13 @@ class ChatComponent {
       this.ollamaAPI.updateBaseUrl(apiHost);
       
       // 显示保存成功的提示
-      this.addMessageToUI('system', 'API地址已保存并立即生效！');
+      this.addMessageToUI('system', `API地址已保存并立即生效: ${apiHost}`);
       
       // 重新加载模型列表
       this.loadModels();
+    } else {
+      // 显示保存失败的提示
+      this.addMessageToUI('system', 'API地址不能为空');
     }
   }
   
