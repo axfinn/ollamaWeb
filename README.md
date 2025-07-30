@@ -106,14 +106,12 @@ npm run serve
 
 此外，还支持使用 Mermaid.js 渲染流程图、时序图等图表。使用方法如下：
 
-`````
 ```mermaid
 graph TD
     A[开始] --> B[操作1]
     B --> C[操作2]
     C --> D[结束]
 ```
-````
 
 支持的 Mermaid 图表类型包括：
 - 流程图 (Flowchart)
