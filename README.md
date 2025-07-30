@@ -234,30 +234,71 @@ const response = await fetch('/api/chat', {
 
 API 调用包含完整的错误处理机制，会在界面上显示友好的错误信息。
 
-## 贡献指南
+## 常见问题和解决方案
 
-欢迎任何形式的贡献！请遵循以下步骤：
+### CORS 跨域问题
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+如果您遇到类似以下错误：
+```
+Access to fetch at 'http://localhost:11434/api/tags' from origin 'http://localhost:5173' has been blocked by CORS policy
+```
 
-### 开发规范
+可以通过以下方式解决：
 
-- 遵循现有的代码风格
-- 添加适当的注释
-- 确保通过所有测试
-- 更新相关文档
+1. **配置 Ollama 服务允许 CORS**：
+   ```bash
+   # 设置环境变量并启动 Ollama
+   OLLAMA_ORIGINS=* ollama run llama2
+   ```
 
-## 更新日志
+2. **使用代理**：
+   - 配置 Vite 代理（在 [vite.config.js](file:///Volumes/M20/code/docs/ollamaWeb/vite.config.js) 中添加代理配置）
+   - 使用 nginx 等反向代理服务器
 
-详细变更请查看 [CHANGELOG.md](./CHANGELOG.md)
+### 连接被拒绝问题
+
+如果遇到 "连接被拒绝" 或 "无法连接到 Ollama 服务" 的错误：
+
+1. **检查 Ollama 服务是否正在运行**：
+   ```bash
+   # 检查 Ollama 服务状态
+   ollama list
+   
+   # 如果服务未运行，启动服务
+   ollama serve
+   ```
+
+2. **检查防火墙设置**：
+   - 确保防火墙没有阻止对 Ollama 服务端口（默认 11434）的访问
+   - 如果在远程服务器上运行 Ollama，确保服务器防火墙允许相应端口的访问
+
+3. **验证 API 地址配置**：
+   - 检查页面上的 API 地址配置是否正确
+   - 确保地址包含协议（http:// 或 https://）和正确的端口号
+
+### 模型相关问题
+
+如果模型列表为空或无法加载模型：
+
+1. **确认模型已下载**：
+   ```bash
+   # 列出已下载的模型
+   ollama list
+   
+   # 如果没有模型，下载一个模型
+   ollama pull llama2
+   ```
+
+2. **检查模型名称**：
+   - 确保在界面中选择的模型名称与 Ollama 中的模型名称完全一致
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request 来帮助改进项目。
 
 ## 许可证
 
-本项目采用 MIT 许可证。查看 [LICENSE](./LICENSE) 文件了解详情。
+本项目基于 [MIT 许可证](./LICENSE)。
 
 ## 联系方式
 

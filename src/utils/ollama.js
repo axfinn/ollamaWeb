@@ -11,6 +11,8 @@ class OllamaAPI {
   constructor(baseUrl = 'http://localhost:11434') {
     // 尝试从环境变量获取 baseUrl
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
+    // 在开发环境中使用代理以避免CORS问题
+    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
   }
 
@@ -18,20 +20,39 @@ class OllamaAPI {
    * 初始化所有端点
    */
   initEndpoints() {
-    this.chatEndpoint = `${this.baseUrl}/api/chat`;
-    this.tagsEndpoint = `${this.baseUrl}/api/tags`;
-    this.generateEndpoint = `${this.baseUrl}/api/generate`;
-    this.embeddingsEndpoint = `${this.baseUrl}/api/embeddings`;
-    this.psEndpoint = `${this.baseUrl}/api/ps`;
-    this.showEndpoint = `${this.baseUrl}/api/show`;
-    this.createEndpoint = `${this.baseUrl}/api/create`;
-    this.pullEndpoint = `${this.baseUrl}/api/pull`;
-    this.pushEndpoint = `${this.baseUrl}/api/push`;
-    this.copyEndpoint = `${this.baseUrl}/api/copy`;
-    this.deleteEndpoint = `${this.baseUrl}/api/delete`;
-    this.listEndpoint = `${this.baseUrl}/api/tags`;
-    this.embedEndpoint = `${this.baseUrl}/api/embed`;
-    this.blobsEndpoint = `${this.baseUrl}/api/blobs`;
+    if (this.useProxy) {
+      // 使用相对路径通过代理访问API
+      this.chatEndpoint = `/api/chat`;
+      this.tagsEndpoint = `/api/tags`;
+      this.generateEndpoint = `/api/generate`;
+      this.embeddingsEndpoint = `/api/embeddings`;
+      this.psEndpoint = `/api/ps`;
+      this.showEndpoint = `/api/show`;
+      this.createEndpoint = `/api/create`;
+      this.pullEndpoint = `/api/pull`;
+      this.pushEndpoint = `/api/push`;
+      this.copyEndpoint = `/api/copy`;
+      this.deleteEndpoint = `/api/delete`;
+      this.listEndpoint = `/api/tags`;
+      this.embedEndpoint = `/api/embed`;
+      this.blobsEndpoint = `/api/blobs`;
+    } else {
+      // 直接访问API
+      this.chatEndpoint = `${this.baseUrl}/api/chat`;
+      this.tagsEndpoint = `${this.baseUrl}/api/tags`;
+      this.generateEndpoint = `${this.baseUrl}/api/generate`;
+      this.embeddingsEndpoint = `${this.baseUrl}/api/embeddings`;
+      this.psEndpoint = `${this.baseUrl}/api/ps`;
+      this.showEndpoint = `${this.baseUrl}/api/show`;
+      this.createEndpoint = `${this.baseUrl}/api/create`;
+      this.pullEndpoint = `${this.baseUrl}/api/pull`;
+      this.pushEndpoint = `${this.baseUrl}/api/push`;
+      this.copyEndpoint = `${this.baseUrl}/api/copy`;
+      this.deleteEndpoint = `${this.baseUrl}/api/delete`;
+      this.listEndpoint = `${this.baseUrl}/api/tags`;
+      this.embedEndpoint = `${this.baseUrl}/api/embed`;
+      this.blobsEndpoint = `${this.baseUrl}/api/blobs`;
+    }
   }
 
   /**
@@ -40,6 +61,8 @@ class OllamaAPI {
    */
   updateBaseUrl(newBaseUrl) {
     this.baseUrl = newBaseUrl;
+    // 重新判断是否使用代理
+    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
   }
 
@@ -49,6 +72,8 @@ class OllamaAPI {
   refreshConfig() {
     // 重新从环境变量获取配置
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
+    // 重新判断是否使用代理
+    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
   }
 
@@ -60,13 +85,34 @@ class OllamaAPI {
     try {
       const response = await fetch(this.tagsEndpoint);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        if (response.status === 403) {
+          errorMessage += ' (访问被拒绝，可能是CORS问题或防火墙阻止)';
+        } else if (response.status === 404) {
+          errorMessage += ' (API路径未找到，请检查Ollama服务是否正常运行)';
+        }
+        throw new Error(errorMessage);
       }
       const data = await response.json();
       return data.models || [];
     } catch (error) {
       console.error('获取模型列表失败:', error);
-      throw new Error(`无法连接到 Ollama 服务，请确保服务正在运行且可访问 (${this.baseUrl})`);
+      let errorMessage = `无法连接到 Ollama 服务，请确保服务正在运行且可访问 (${this.baseUrl})`;
+      
+      // 提供更具体的错误信息
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        if (error.message.includes('ERR_CONNECTION_REFUSED')) {
+          errorMessage = `连接被拒绝，请检查 Ollama 服务是否正在运行，或防火墙是否阻止了连接 (${this.baseUrl})`;
+        } else if (error.message.includes('CORS')) {
+          errorMessage = `跨域请求被阻止，请确保 Ollama 服务已正确配置 CORS 或使用代理 (${this.baseUrl})`;
+        } else {
+          errorMessage = `网络错误，请检查网络连接或 Ollama 服务地址是否正确 (${this.baseUrl})`;
+        }
+      } else if (error.message.includes('403')) {
+        errorMessage = `访问被禁止，请检查 Ollama 服务配置或防火墙设置 (${this.baseUrl})`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 

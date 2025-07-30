@@ -126,6 +126,13 @@ class ChatComponent {
     } catch (error) {
       console.error('加载模型列表失败:', error);
       this.addMessageToUI('system', `警告: ${error.message}`);
+      
+      // 提供解决方案建议
+      this.addMessageToUI('system', '解决建议:');
+      this.addMessageToUI('system', '1. 确保 Ollama 服务正在运行');
+      this.addMessageToUI('system', '2. 检查 API 地址是否正确 (当前: ' + this.ollamaAPI.baseUrl + ')');
+      this.addMessageToUI('system', '3. 如果是跨域问题，请配置 Ollama 服务允许 CORS 或使用代理');
+      this.addMessageToUI('system', '4. 检查防火墙设置是否阻止了连接');
     }
   }
   
@@ -149,7 +156,12 @@ class ChatComponent {
     } catch (error) {
       console.error('刷新模型列表失败:', error);
       this.addMessageToUI('system', `错误: ${error.message}`);
-      this.modelSelect.nextElementSibling.textContent = '刷新模型';
+      
+      // 恢复按钮文本
+      const refreshBtn = this.modelSelect.nextElementSibling;
+      if (refreshBtn) {
+        refreshBtn.textContent = '刷新模型';
+      }
     }
   }
   
@@ -237,6 +249,14 @@ class ChatComponent {
       // 显示错误信息
       this.addMessageToUI('system', `错误: ${error.message}`);
       console.error('聊天请求失败:', error);
+      
+      // 提供解决方案建议
+      if (error.message.includes('CORS') || error.message.includes('连接')) {
+        this.addMessageToUI('system', '解决建议:');
+        this.addMessageToUI('system', '1. 检查 Ollama 服务是否正在运行');
+        this.addMessageToUI('system', '2. 确保 API 地址配置正确');
+        this.addMessageToUI('system', '3. 如果是跨域问题，请配置 Ollama 服务允许 CORS');
+      }
     }
   }
   
