@@ -5,6 +5,13 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.2.1] - 2025-08-05
+
+### 修复
+
+- 修复版本号不一致问题
+- 修正package.json、CHANGELOG.md和Git标签之间的版本同步问题
+
 ## [1.2.0] - 2025-08-05
 
 ### 新增
