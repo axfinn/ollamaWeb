@@ -5,12 +5,20 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [1.2.1] - 2025-08-05
+## [1.3.0] - 2025-08-05
 
-### 修复
+### 新增
 
-- 修复版本号不一致问题
-- 修正package.json、CHANGELOG.md和Git标签之间的版本同步问题
+- 添加页面级API地址配置功能，支持运行时配置Ollama服务地址
+- 添加localStorage存储，实现API配置的持久化保存
+- 添加配置保存成功提示功能
+- 添加输入验证和错误处理
+
+### 修改
+
+- 增强OllamaAPI类，添加updateBaseUrl和refreshConfig方法
+- 优化前端界面，添加API地址配置区域
+- 改进README文档，添加页面配置说明
 
 ## [1.2.0] - 2025-08-05
 

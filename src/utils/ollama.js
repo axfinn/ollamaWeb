@@ -11,6 +11,13 @@ class OllamaAPI {
   constructor(baseUrl = 'http://localhost:11434') {
     // 尝试从环境变量获取 baseUrl
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
+    this.initEndpoints();
+  }
+
+  /**
+   * 初始化所有端点
+   */
+  initEndpoints() {
     this.chatEndpoint = `${this.baseUrl}/api/chat`;
     this.tagsEndpoint = `${this.baseUrl}/api/tags`;
     this.generateEndpoint = `${this.baseUrl}/api/generate`;
@@ -25,6 +32,24 @@ class OllamaAPI {
     this.listEndpoint = `${this.baseUrl}/api/tags`;
     this.embedEndpoint = `${this.baseUrl}/api/embed`;
     this.blobsEndpoint = `${this.baseUrl}/api/blobs`;
+  }
+
+  /**
+   * 更新API基础URL
+   * @param {string} newBaseUrl - 新的基础URL
+   */
+  updateBaseUrl(newBaseUrl) {
+    this.baseUrl = newBaseUrl;
+    this.initEndpoints();
+  }
+
+  /**
+   * 刷新API配置
+   */
+  refreshConfig() {
+    // 重新从环境变量获取配置
+    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
+    this.initEndpoints();
   }
 
   /**

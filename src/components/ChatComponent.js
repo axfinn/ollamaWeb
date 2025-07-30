@@ -24,6 +24,9 @@ class ChatComponent {
     this.temperatureSlider = document.getElementById('temperature');
     this.temperatureValue = document.getElementById('temperature-value');
     this.maxTokensInput = document.getElementById('max-tokens');
+    // API配置相关元素
+    this.apiHostInput = document.getElementById('api-host');
+    this.saveApiHostButton = document.getElementById('save-api-host');
     
     this.messages = [];
     this.ollamaAPI = new OllamaAPI();
@@ -35,6 +38,9 @@ class ChatComponent {
    * 初始化组件
    */
   init() {
+    // 从localStorage加载保存的API地址
+    this.loadSavedApiHost();
+    
     // 绑定事件
     this.bindEvents();
     
@@ -43,6 +49,21 @@ class ChatComponent {
     
     // 加载模型列表
     this.loadModels();
+  }
+  
+  /**
+   * 从localStorage加载保存的API地址
+   */
+  loadSavedApiHost() {
+    const savedApiHost = localStorage.getItem('ollama-api-host');
+    if (savedApiHost) {
+      this.apiHostInput.value = savedApiHost;
+      // 更新API实例的baseUrl
+      this.ollamaAPI.updateBaseUrl(savedApiHost);
+    } else {
+      // 如果没有保存的API地址，则使用默认值或环境变量
+      this.apiHostInput.value = this.ollamaAPI.baseUrl;
+    }
   }
   
   /**
@@ -63,6 +84,11 @@ class ChatComponent {
       this.temperatureValue.textContent = this.temperatureSlider.value;
     });
     
+    // API地址保存事件
+    if (this.saveApiHostButton) {
+      this.saveApiHostButton.addEventListener('click', () => this.saveApiHost());
+    }
+    
     // 添加刷新模型按钮事件
     const refreshBtn = document.createElement('button');
     refreshBtn.textContent = '刷新模型';
@@ -73,6 +99,21 @@ class ChatComponent {
     // 将刷新按钮添加到模型选择器旁边
     const modelSelectParent = this.modelSelect.parentNode;
     modelSelectParent.appendChild(refreshBtn);
+  }
+  
+  /**
+   * 保存API地址到localStorage
+   */
+  saveApiHost() {
+    const apiHost = this.apiHostInput.value.trim();
+    if (apiHost) {
+      localStorage.setItem('ollama-api-host', apiHost);
+      // 更新API实例的baseUrl
+      this.ollamaAPI.updateBaseUrl(apiHost);
+      
+      // 显示保存成功的提示
+      this.addMessageToUI('system', 'API地址已保存！刷新页面后将使用新的配置。');
+    }
   }
   
   /**
@@ -94,14 +135,15 @@ class ChatComponent {
   async refreshModels() {
     try {
       // 显示加载状态
-      const originalText = this.modelSelect.nextElementSibling.textContent;
-      this.modelSelect.nextElementSibling.textContent = '刷新中...';
+      const refreshBtn = this.modelSelect.nextElementSibling;
+      const originalText = refreshBtn.textContent;
+      refreshBtn.textContent = '刷新中...';
       
       const models = await this.ollamaAPI.refreshModels();
       this.updateModelList(models);
       
       // 恢复按钮文本
-      this.modelSelect.nextElementSibling.textContent = '刷新模型';
+      refreshBtn.textContent = '刷新模型';
       
       this.addMessageToUI('system', '模型列表已更新');
     } catch (error) {
@@ -196,6 +238,14 @@ class ChatComponent {
       this.addMessageToUI('system', `错误: ${error.message}`);
       console.error('聊天请求失败:', error);
     }
+  }
+  
+  /**
+   * 添加系统消息到界面
+   * @param {string} content - 消息内容
+   */
+  addSystemMessage(content) {
+    this.addMessageToUI('system', content);
   }
   
   /**

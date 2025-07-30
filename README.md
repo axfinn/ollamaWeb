@@ -16,6 +16,7 @@
 - 🎨 **响应式设计** - 适配桌面和移动设备的现代化界面
 - 🌙 **暗色主题** - 舒适的夜间使用体验
 - 🔧 **开发者友好** - 基于现代前端工具链构建
+- 🌐 **可配置的API地址** - 支持自定义 Ollama 服务地址
 
 ## 目录
 
@@ -30,13 +31,44 @@
 
 ## 快速开始
 
+### 环境准备
+
+确保已安装 [Ollama](https://ollama.ai/) 并运行了至少一个模型：
+
+```bash
+# 安装并运行 Ollama
+brew install ollama  # macOS
+
+# 运行模型
+ollama run llama2
+```
+
 ### 前置要求
 
 - [Ollama](https://ollama.ai) 已安装并运行
 - [Node.js](https://nodejs.org) (推荐 v16+)
 - npm 或 yarn 包管理器
 
-### 安装
+### 配置 API 地址
+
+项目默认连接本地 Ollama 服务 (`http://localhost:11434`)。如果需要连接远程 Ollama 服务，可以通过以下方式配置：
+
+1. **通过环境变量**（构建时配置）：
+   ```bash
+   # 复制示例配置文件
+   cp .env.example .env
+   
+   # 编辑 .env 文件，修改 VITE_OLLAMA_HOST 值
+   VITE_OLLAMA_HOST=http://your-ollama-server:11434
+   ```
+
+2. **通过页面配置**（运行时配置）：
+   - 在页面左侧的"参数配置"区域找到"API 地址"输入框
+   - 输入 Ollama 服务地址，例如：`http://your-ollama-server:11434`
+   - 点击"保存"按钮
+   - 刷新页面后将使用新的配置
+
+### 本地开发
 
 ```
 # 克隆项目
@@ -182,7 +214,7 @@ VITE_APP_TITLE=Ollama Web Interface
 
 ### API 调用示例
 
-```javascript
+``javascript
 // 获取模型列表
 const response = await fetch('/api/tags');
 const { models } = await response.json();
