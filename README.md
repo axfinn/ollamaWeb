@@ -216,6 +216,25 @@ ollamaWeb/
 - 项目地址: [https://github.com/axfinn/ollamaWeb](https://github.com/axfinn/ollamaWeb)
 - 问题反馈: [Issues](https://github.com/axfinn/ollamaWeb/issues)
 
+## 赞助支持
+
+如果您觉得本项目对您有帮助，欢迎请我喝杯咖啡 ☕️
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="./img/wxpay.JPG" alt="微信赞赏码" width="200"><br>
+        <sub>微信赞赏</sub>
+      </td>
+      <td align="center">
+        <img src="./img/alipay.JPG" alt="支付宝收款码" width="200"><br>
+        <sub>支付宝收款</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
 ---
 
 <div align="center">
