@@ -220,18 +220,15 @@ ollamaWeb/
 
 如果您觉得本项目对您有帮助，欢迎请作者喝杯咖啡😄：
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="./img/wxpay.JPG" alt="微信赞赏码" width="200">
-      <p>微信赞赏码</p>
-    </td>
-    <td align="center">
-      <img src="./img/alipay.JPG" alt="支付宝收款码" width="200">
-      <p>支付宝收款码</p>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./img/wxpay.JPG" alt="微信赞赏码" width="200">
+  <p>微信赞赏码</p>
+</div>
+
+<div align="center">
+  <img src="./img/alipay.JPG" alt="支付宝收款码" width="200">
+  <p>支付宝收款码</p>
+</div>
 
 ---
 
