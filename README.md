@@ -141,6 +141,16 @@ docker run -p 8080:80 ollama-web
 
 ## 配置说明
 
+### 环境变量
+
+项目支持通过环境变量配置 Ollama 服务地址：
+
+```
+VITE_OLLAMA_HOST=http://localhost:11434
+```
+
+创建 `.env` 文件在项目根目录下，并添加上述变量以配置 Ollama 服务地址。
+
 ### 模型参数
 
 | 参数 | 说明 | 默认值 | 范围 |

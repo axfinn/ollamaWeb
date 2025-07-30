@@ -10,45 +10,21 @@ class OllamaAPI {
    */
   constructor(baseUrl = 'http://localhost:11434') {
     // 尝试从环境变量获取 baseUrl
-    this._baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
-    this.updateEndpoints();
-  }
-
-  /**
-   * 更新所有端点URL
-   */
-  updateEndpoints() {
-    this.chatEndpoint = `${this._baseUrl}/api/chat`;
-    this.tagsEndpoint = `${this._baseUrl}/api/tags`;
-    this.generateEndpoint = `${this._baseUrl}/api/generate`;
-    this.embeddingsEndpoint = `${this._baseUrl}/api/embeddings`;
-    this.psEndpoint = `${this._baseUrl}/api/ps`;
-    this.showEndpoint = `${this._baseUrl}/api/show`;
-    this.createEndpoint = `${this._baseUrl}/api/create`;
-    this.pullEndpoint = `${this._baseUrl}/api/pull`;
-    this.pushEndpoint = `${this._baseUrl}/api/push`;
-    this.copyEndpoint = `${this._baseUrl}/api/copy`;
-    this.deleteEndpoint = `${this._baseUrl}/api/delete`;
-    this.listEndpoint = `${this._baseUrl}/api/tags`;
-    this.embedEndpoint = `${this._baseUrl}/api/embed`;
-    this.blobsEndpoint = `${this._baseUrl}/api/blobs`;
-  }
-
-  /**
-   * 获取基础URL
-   * @returns {string} 基础URL
-   */
-  get baseUrl() {
-    return this._baseUrl;
-  }
-
-  /**
-   * 设置基础URL
-   * @param {string} value - 新的基础URL
-   */
-  set baseUrl(value) {
-    this._baseUrl = value;
-    this.updateEndpoints();
+    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
+    this.chatEndpoint = `${this.baseUrl}/api/chat`;
+    this.tagsEndpoint = `${this.baseUrl}/api/tags`;
+    this.generateEndpoint = `${this.baseUrl}/api/generate`;
+    this.embeddingsEndpoint = `${this.baseUrl}/api/embeddings`;
+    this.psEndpoint = `${this.baseUrl}/api/ps`;
+    this.showEndpoint = `${this.baseUrl}/api/show`;
+    this.createEndpoint = `${this.baseUrl}/api/create`;
+    this.pullEndpoint = `${this.baseUrl}/api/pull`;
+    this.pushEndpoint = `${this.baseUrl}/api/push`;
+    this.copyEndpoint = `${this.baseUrl}/api/copy`;
+    this.deleteEndpoint = `${this.baseUrl}/api/delete`;
+    this.listEndpoint = `${this.baseUrl}/api/tags`;
+    this.embedEndpoint = `${this.baseUrl}/api/embed`;
+    this.blobsEndpoint = `${this.baseUrl}/api/blobs`;
   }
 
   /**
@@ -62,11 +38,20 @@ class OllamaAPI {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      return data.models;
+      return data.models || [];
     } catch (error) {
       console.error('获取模型列表失败:', error);
-      throw error;
+      throw new Error(`无法连接到 Ollama 服务，请确保服务正在运行且可访问 (${this.baseUrl})`);
     }
+  }
+
+  /**
+   * 刷新模型列表
+   * @returns {Promise<Array>} 模型列表
+   */
+  async refreshModels() {
+    // 重新加载模型列表
+    return await this.getModels();
   }
 
   /**
@@ -97,13 +82,17 @@ class OllamaAPI {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, details: ${errorData}`);
       }
       
       const data = await response.json();
       return data.message.content;
     } catch (error) {
       console.error('聊天请求失败:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('无法连接到 Ollama 服务，请确保服务正在运行且可访问');
+      }
       throw error;
     }
   }

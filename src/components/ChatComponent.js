@@ -25,10 +25,6 @@ class ChatComponent {
     this.temperatureValue = document.getElementById('temperature-value');
     this.maxTokensInput = document.getElementById('max-tokens');
     
-    // 获取可能存在的 API 地址配置输入框
-    this.apiHostInput = document.getElementById('api-host');
-    this.saveApiConfigButton = document.getElementById('save-api-config');
-    
     this.messages = [];
     this.ollamaAPI = new OllamaAPI();
     
@@ -55,6 +51,7 @@ class ChatComponent {
   bindEvents() {
     this.sendButton.addEventListener('click', () => this.sendMessage());
     this.clearButton.addEventListener('click', () => this.clearChat());
+    
     this.userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -66,37 +63,16 @@ class ChatComponent {
       this.temperatureValue.textContent = this.temperatureSlider.value;
     });
     
-    // 如果存在 API 配置相关元素，绑定相应事件
-    if (this.apiHostInput && this.saveApiConfigButton) {
-      this.saveApiConfigButton.addEventListener('click', () => this.saveApiConfig());
-      
-      // 如果有本地存储的 API 地址，加载它
-      const savedApiHost = localStorage.getItem('ollamaApiHost');
-      if (savedApiHost) {
-        this.apiHostInput.value = savedApiHost;
-        this.ollamaAPI.baseUrl = savedApiHost;
-      }
-    }
-  }
-  
-  /**
-   * 保存 API 配置
-   */
-  saveApiConfig() {
-    if (this.apiHostInput) {
-      const apiHost = this.apiHostInput.value.trim();
-      if (apiHost) {
-        // 保存到本地存储
-        localStorage.setItem('ollamaApiHost', apiHost);
-        // 更新 OllamaAPI 实例的 baseUrl
-        this.ollamaAPI.baseUrl = apiHost;
-        // 重新加载模型列表
-        this.loadModels();
-        
-        // 显示保存成功的提示
-        this.addSystemMessage('API 配置已保存并应用');
-      }
-    }
+    // 添加刷新模型按钮事件
+    const refreshBtn = document.createElement('button');
+    refreshBtn.textContent = '刷新模型';
+    refreshBtn.className = 'btn btn-primary';
+    refreshBtn.style.marginLeft = '10px';
+    refreshBtn.addEventListener('click', () => this.refreshModels());
+    
+    // 将刷新按钮添加到模型选择器旁边
+    const modelSelectParent = this.modelSelect.parentNode;
+    modelSelectParent.appendChild(refreshBtn);
   }
   
   /**
@@ -105,8 +81,48 @@ class ChatComponent {
   async loadModels() {
     try {
       const models = await this.ollamaAPI.getModels();
-      // 清空现有选项
-      this.modelSelect.innerHTML = '';
+      this.updateModelList(models);
+    } catch (error) {
+      console.error('加载模型列表失败:', error);
+      this.addMessageToUI('system', `警告: ${error.message}`);
+    }
+  }
+  
+  /**
+   * 刷新模型列表
+   */
+  async refreshModels() {
+    try {
+      // 显示加载状态
+      const originalText = this.modelSelect.nextElementSibling.textContent;
+      this.modelSelect.nextElementSibling.textContent = '刷新中...';
+      
+      const models = await this.ollamaAPI.refreshModels();
+      this.updateModelList(models);
+      
+      // 恢复按钮文本
+      this.modelSelect.nextElementSibling.textContent = '刷新模型';
+      
+      this.addMessageToUI('system', '模型列表已更新');
+    } catch (error) {
+      console.error('刷新模型列表失败:', error);
+      this.addMessageToUI('system', `错误: ${error.message}`);
+      this.modelSelect.nextElementSibling.textContent = '刷新模型';
+    }
+  }
+  
+  /**
+   * 更新模型下拉列表
+   * @param {Array} models - 模型列表
+   */
+  updateModelList(models) {
+    // 保存当前选中的模型
+    const currentModel = this.modelSelect.value;
+    
+    // 清空现有选项
+    this.modelSelect.innerHTML = '';
+    
+    if (models && models.length > 0) {
       // 添加新选项
       models.forEach(model => {
         const option = document.createElement('option');
@@ -114,9 +130,18 @@ class ChatComponent {
         option.textContent = model.name;
         this.modelSelect.appendChild(option);
       });
-    } catch (error) {
-      console.error('加载模型列表失败:', error);
-      this.addSystemMessage(`加载模型列表失败: ${error.message}`);
+      
+      // 尝试恢复之前选中的模型
+      if (currentModel && Array.from(this.modelSelect.options).some(opt => opt.value === currentModel)) {
+        this.modelSelect.value = currentModel;
+      }
+    } else {
+      // 如果没有模型，添加默认选项
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = '暂无可用模型';
+      this.modelSelect.appendChild(option);
+      this.modelSelect.disabled = true;
     }
   }
   
@@ -126,6 +151,12 @@ class ChatComponent {
   async sendMessage() {
     const message = this.userInput.value.trim();
     if (!message) return;
+    
+    // 检查是否选择了模型
+    if (!this.modelSelect.value) {
+      this.addMessageToUI('system', '请先选择一个模型');
+      return;
+    }
     
     // 添加用户消息到界面
     this.addMessageToUI('user', message);
@@ -163,6 +194,7 @@ class ChatComponent {
       
       // 显示错误信息
       this.addMessageToUI('system', `错误: ${error.message}`);
+      console.error('聊天请求失败:', error);
     }
   }
   
@@ -183,7 +215,7 @@ class ChatComponent {
     this.chatHistory.appendChild(messageDiv);
     
     // 滚动到底部
-    this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
+    this.scrollToBottom();
   }
   
   /**
@@ -202,9 +234,16 @@ class ChatComponent {
     this.chatHistory.appendChild(loadingDiv);
     
     // 滚动到底部
-    this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
+    this.scrollToBottom();
     
     return loadingDiv;
+  }
+  
+  /**
+   * 滚动聊天历史到底部
+   */
+  scrollToBottom() {
+    this.chatHistory.scrollTop = this.chatHistory.scrollHeight;
   }
   
   /**
