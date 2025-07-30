@@ -56,7 +56,7 @@ class ChatComponent {
     this.maxTokensInput = document.getElementById('max-tokens');
     // API配置相关元素
     this.apiHostInput = document.getElementById('api-host');
-    this.saveApiHostButton = document.getElementById('save-apiHost-button');
+    this.saveApiHostButton = document.getElementById('save-api-host');
     
     // 会话标签页相关元素
     this.sessionTabs = document.getElementById('session-tabs');
@@ -434,7 +434,10 @@ class ChatComponent {
       this.ollamaAPI.updateBaseUrl(apiHost);
       
       // 显示保存成功的提示
-      this.addMessageToUI('system', 'API地址已保存！刷新页面后将使用新的配置。');
+      this.addMessageToUI('system', 'API地址已保存并立即生效！');
+      
+      // 重新加载模型列表
+      this.loadModels();
     }
   }
   
@@ -617,7 +620,9 @@ class ChatComponent {
       contentDiv.innerHTML = this.renderMarkdown(content);
       // 代码高亮
       contentDiv.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
+        if (block.className.includes('language-')) {
+          hljs.highlightElement(block);
+        }
       });
     } else if (role === 'user') {
       contentDiv.textContent = content;
