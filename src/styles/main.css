@@ -151,16 +151,22 @@ body {
   overflow-x: auto;
 }
 
+.session-tab-container {
+  display: flex;
+  margin-right: 5px;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+}
+
 .session-tab {
   padding: 10px 15px;
   cursor: pointer;
   border: 1px solid transparent;
   border-bottom: none;
-  border-radius: 5px 5px 0 0;
   background-color: #e9ecef;
-  margin-right: 5px;
   white-space: nowrap;
   font-size: 14px;
+  flex: 1;
 }
 
 .session-tab.active {
@@ -171,6 +177,26 @@ body {
 
 .session-tab:hover:not(.active) {
   background-color: #dee2e6;
+}
+
+.delete-session-btn {
+  background-color: #e9ecef;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-left: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px 8px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-session-btn:hover {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 #new-session-btn {

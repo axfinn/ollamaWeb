@@ -41,6 +41,10 @@ class ChatComponent {
     this.currentSessionId = null;
     this.sessionCounter = 1;
     
+    // 用户输入历史相关
+    this.inputHistory = [];
+    this.currentHistoryIndex = -1;
+    
     this.ollamaAPI = new OllamaAPI();
     
     this.init();
@@ -190,6 +194,9 @@ class ChatComponent {
     this.sessionTabs.innerHTML = '';
     
     this.sessions.forEach(session => {
+      const tabContainer = document.createElement('div');
+      tabContainer.className = 'session-tab-container';
+      
       const tab = document.createElement('div');
       tab.className = `session-tab ${session.id === this.currentSessionId ? 'active' : ''}`;
       tab.textContent = session.name;
@@ -209,7 +216,28 @@ class ChatComponent {
         }
       });
       
-      this.sessionTabs.appendChild(tab);
+      // 添加删除按钮
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-session-btn';
+      deleteBtn.textContent = '×';
+      deleteBtn.dataset.sessionId = session.id;
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const sessionId = parseInt(e.currentTarget.dataset.sessionId);
+        // 确认删除
+        if (this.sessions.length <= 1) {
+          alert('至少需要保留一个会话');
+          return;
+        }
+        
+        if (confirm(`确定要删除会话 "${session.name}" 吗？`)) {
+          this.deleteSession(sessionId);
+        }
+      });
+      
+      tabContainer.appendChild(tab);
+      tabContainer.appendChild(deleteBtn);
+      this.sessionTabs.appendChild(tabContainer);
     });
   }
   
@@ -279,9 +307,23 @@ class ChatComponent {
     this.clearButton.addEventListener('click', () => this.clearChat());
     
     this.userInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      // Ctrl + Enter 发送消息
+      if (e.key === 'Enter' && e.ctrlKey) {
         e.preventDefault();
         this.sendMessage();
+        return;
+      }
+      
+      // Enter 发送消息（保持原有功能）
+      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+        e.preventDefault();
+        this.sendMessage();
+        return;
+      }
+      
+      // 上下箭头键处理输入历史
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        this.handleInputHistory(e);
       }
     });
     
@@ -307,6 +349,54 @@ class ChatComponent {
     
     // 会话标签页事件
     this.newSessionButton.addEventListener('click', () => this.createSession());
+  }
+  
+  /**
+   * 处理输入历史记录（上下箭头键）
+   * @param {Event} e - 键盘事件
+   */
+  handleInputHistory(e) {
+    const currentSession = this.getCurrentSession();
+    if (!currentSession) return;
+    
+    // 获取用户消息历史
+    const userMessages = currentSession.messages
+      .filter(msg => msg.role === 'user')
+      .map(msg => msg.content);
+    
+    // 合并当前输入历史和会话历史
+    this.inputHistory = [...userMessages];
+    
+    if (this.inputHistory.length === 0) return;
+    
+    e.preventDefault();
+    
+    if (e.key === 'ArrowUp') {
+      // 如果当前没有历史记录索引，则从最后一条开始
+      if (this.currentHistoryIndex === -1) {
+        this.currentHistoryIndex = this.inputHistory.length - 1;
+      } else if (this.currentHistoryIndex > 0) {
+        // 否则向前移动
+        this.currentHistoryIndex--;
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (this.currentHistoryIndex < this.inputHistory.length - 1) {
+        this.currentHistoryIndex++;
+      } else {
+        // 到达最新记录时清空输入框
+        this.currentHistoryIndex = -1;
+        this.userInput.value = '';
+        return;
+      }
+    }
+    
+    // 更新输入框内容
+    if (this.currentHistoryIndex >= 0 && this.currentHistoryIndex < this.inputHistory.length) {
+      this.userInput.value = this.inputHistory[this.currentHistoryIndex];
+      // 将光标移到末尾
+      this.userInput.selectionStart = this.userInput.value.length;
+      this.userInput.selectionEnd = this.userInput.value.length;
+    }
   }
   
   /**
@@ -427,6 +517,10 @@ class ChatComponent {
     this.addMessageToUI('user', message);
     currentSession.messages.push({ role: 'user', content: message });
     this.saveSessions();
+    
+    // 添加到输入历史
+    this.inputHistory.push(message);
+    this.currentHistoryIndex = -1;
     
     // 清空输入框
     this.userInput.value = '';
