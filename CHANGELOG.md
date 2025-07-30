@@ -5,7 +5,14 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [1.0.0] - 2025-07-30
+## [1.1.1] - 2025-07-30
+
+### 修复
+
+- 修复README中捐赠二维码图片的显示问题
+- 优化README文件的Markdown格式
+
+## [1.1.0] - 2025-07-30
 
 ### 添加
 
