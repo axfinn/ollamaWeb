@@ -17,6 +17,7 @@
 - 集成Vite构建工具
 - 创建组件化结构 (ChatComponent, OllamaAPI)
 - 添加Git开发流程支持
+- 添加捐赠支持 (微信和支付宝付款码)
 
 ### 更改
 

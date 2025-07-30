@@ -172,7 +172,7 @@ VITE_APP_TITLE=Ollama Web Interface
 
 ### API 调用示例
 
-```javascript
+``javascript
 // 获取模型列表
 const response = await fetch('/api/tags');
 const { models } = await response.json();
@@ -222,3 +222,22 @@ API 调用包含完整的错误处理机制，会在界面上显示友好的错�
 项目维护者: [axfinn](https://github.com/axfinn)
 
 项目链接: [https://github.com/axfinn/ollamaWeb](https://github.com/axfinn/ollamaWeb)
+
+## 请作者喝杯咖啡 ☕
+
+如果您觉得这个项目对您有帮助，欢迎扫码请作者喝杯咖啡！
+
+<div align="center">
+  <div style="display: flex; justify-content: center; gap: 50px; margin: 20px 0;">
+    <div>
+      <img src="img/wxpay.JPG" alt="微信捐赠码" width="200" />
+      <p>微信捐赠</p>
+    </div>
+    <div>
+      <img src="img/alipay.JPG" alt="支付宝捐赠码" width="200" />
+      <p>支付宝捐赠</p>
+    </div>
+  </div>
+</div>
+
+---
