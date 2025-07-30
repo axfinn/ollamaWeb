@@ -24,9 +24,14 @@ class ChatComponent {
     this.temperatureSlider = document.getElementById('temperature');
     this.temperatureValue = document.getElementById('temperature-value');
     this.maxTokensInput = document.getElementById('max-tokens');
+    this.apiHostInput = document.getElementById('api-host');
+    this.saveApiConfigButton = document.getElementById('save-api-config');
     
     this.messages = [];
     this.ollamaAPI = new OllamaAPI();
+    
+    // 加载保存的 API 配置
+    this.loadApiConfig();
     
     this.init();
   }
@@ -41,6 +46,9 @@ class ChatComponent {
     // 初始化参数显示
     this.temperatureValue.textContent = this.temperatureSlider.value;
     
+    // 设置 API host 输入框的值
+    this.apiHostInput.value = this.ollamaAPI.getBaseUrl();
+    
     // 加载模型列表
     this.loadModels();
   }
@@ -51,6 +59,7 @@ class ChatComponent {
   bindEvents() {
     this.sendButton.addEventListener('click', () => this.sendMessage());
     this.clearButton.addEventListener('click', () => this.clearChat());
+    this.saveApiConfigButton.addEventListener('click', () => this.saveApiConfig());
     
     this.userInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -62,6 +71,34 @@ class ChatComponent {
     this.temperatureSlider.addEventListener('input', () => {
       this.temperatureValue.textContent = this.temperatureSlider.value;
     });
+  }
+  
+  /**
+   * 加载 API 配置
+   */
+  loadApiConfig() {
+    const savedConfig = localStorage.getItem('ollamaApiConfig');
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig);
+      this.ollamaAPI.setBaseUrl(config.host);
+    }
+  }
+  
+  /**
+   * 保存 API 配置
+   */
+  saveApiConfig() {
+    const host = this.apiHostInput.value.trim() || 'http://localhost:11434';
+    this.ollamaAPI.setBaseUrl(host);
+    
+    // 保存到 localStorage
+    localStorage.setItem('ollamaApiConfig', JSON.stringify({ host }));
+    
+    // 显示保存成功的消息
+    this.addMessageToUI('system', `API 配置已保存: ${host}`);
+    
+    // 重新加载模型列表
+    this.loadModels();
   }
   
   /**
@@ -83,6 +120,7 @@ class ChatComponent {
     } catch (error) {
       console.error('加载模型列表失败:', error);
       // 出错时保留默认选项
+      this.addMessageToUI('system', `加载模型列表失败: ${error.message}`);
     }
   }
   
