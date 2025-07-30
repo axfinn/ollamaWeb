@@ -5,6 +5,19 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.4.3] - 2025-08-09
+
+### 新增
+- 使用Tailwind CSS重构整个UI界面，实现现代化设计
+- 集成Highlight.js实现代码块语法高亮，支持多种编程语言
+- 添加加载动画（打字指示器）提升用户体验
+- 添加Font Awesome图标库，增强界面视觉效果
+
+### 改进
+- 改进Markdown渲染功能，支持更丰富的元素样式
+- 优化聊天消息显示效果，包括气泡样式和动画
+- 更新README文档，添加界面预览和功能说明
+
 ## [1.4.2] - 2025-08-09
 
 ### 新增
