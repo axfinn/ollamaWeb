@@ -1,5 +1,12 @@
 # 更新日志
 
+## [1.4.4] - 2025-07-31
+
+### 修复
+- 修复 API 配置不生效问题，支持 .env 配置优先
+- 修复 Vite 代理 rewrite 规则，确保 API 请求路径正确
+
+
 所有重要的项目变更都会记录在这个文件中。
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
