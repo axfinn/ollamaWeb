@@ -3,15 +3,16 @@
  * 提供与Ollama后端服务的交互功能
  */
 
+import { OLLAMA_API_HOST } from '../config.js';
+
 class OllamaAPI {
   /**
    * 构造函数
-   * @param {string} baseUrl - Ollama服务的基础URL
    */
-  constructor(baseUrl = 'http://localhost:11434') {
-    // 尝试从环境变量获取 baseUrl
-    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
+  constructor() {
+    this.baseUrl = OLLAMA_API_HOST;
     // 在开发环境中使用代理以避免CORS问题
+    // 注意：如果不再使用Vite代理，此useProxy逻辑可能需要调整或移除
     this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
   }
@@ -70,8 +71,8 @@ class OllamaAPI {
    * 刷新API配置
    */
   refreshConfig() {
-    // 重新从环境变量获取配置
-    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
+    // 重新从 config.js 获取配置
+    this.baseUrl = OLLAMA_API_HOST;
     // 重新判断是否使用代理
     this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();

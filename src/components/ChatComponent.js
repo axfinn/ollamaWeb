@@ -85,20 +85,14 @@ class ChatComponent {
    * 从localStorage加载保存的API地址
    */
   loadSavedApiHost() {
-    // 优先使用环境变量 VITE_OLLAMA_HOST
-    if (import.meta.env?.VITE_OLLAMA_HOST) {
-      this.ollamaAPI.updateBaseUrl(import.meta.env.VITE_OLLAMA_HOST);
-      this.apiHostInput.value = import.meta.env.VITE_OLLAMA_HOST;
+    const savedApiHost = localStorage.getItem('ollama-api-host');
+    if (savedApiHost) {
+      this.apiHostInput.value = savedApiHost;
+      // 更新API实例的baseUrl
+      this.ollamaAPI.updateBaseUrl(savedApiHost);
     } else {
-      const savedApiHost = localStorage.getItem('ollama-api-host');
-      if (savedApiHost) {
-        this.apiHostInput.value = savedApiHost;
-        // 更新API实例的baseUrl
-        this.ollamaAPI.updateBaseUrl(savedApiHost);
-      } else {
-        // 如果没有保存的API地址，则使用OllamaAPI的默认值
-        this.apiHostInput.value = this.ollamaAPI.baseUrl;
-      }
+      // 如果没有保存的API地址，则使用OllamaAPI的默认值 (来自 config.js)
+      this.apiHostInput.value = this.ollamaAPI.baseUrl;
     }
   }
   

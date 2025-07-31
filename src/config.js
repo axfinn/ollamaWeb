@@ -1,0 +1,1 @@
+export const OLLAMA_API_HOST = 'http://10.23.29.11:11434'; // 在这里修改你的 Ollama API 地址

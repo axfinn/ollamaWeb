@@ -30,3 +30,6 @@ Thumbs.db
 
 # Vite
 .vite/
+
+# Global config file
+src/config.js
