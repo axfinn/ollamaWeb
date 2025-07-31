@@ -8,8 +8,9 @@ class OllamaAPI {
    * 构造函数
    * @param {string} baseUrl - Ollama服务的基础URL
    */
-  constructor(baseUrl = 'http://10.23.29.11:11434') { // 硬编码 Ollama API 地址
-    this.baseUrl = baseUrl;
+  constructor(baseUrl = 'http://localhost:11434') {
+    // 尝试从环境变量获取 baseUrl
+    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
     // 在开发环境中使用代理以避免CORS问题
     this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
@@ -69,8 +70,8 @@ class OllamaAPI {
    * 刷新API配置
    */
   refreshConfig() {
-    // 重新从环境变量获取配置 (此处不再从环境变量获取，因为已硬编码)
-    // this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
+    // 重新从环境变量获取配置
+    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
     // 重新判断是否使用代理
     this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
