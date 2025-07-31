@@ -11,8 +11,6 @@ class OllamaAPI {
   constructor(baseUrl = 'http://localhost:11434') {
     // 尝试从环境变量获取 baseUrl
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
-    // 在开发环境中使用代理以避免CORS问题
-    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
     this.initEndpoints();
   }
 
@@ -20,39 +18,21 @@ class OllamaAPI {
    * 初始化所有端点
    */
   initEndpoints() {
-    if (this.useProxy) {
-      // 使用相对路径通过代理访问API
-      this.chatEndpoint = `/api/chat`;
-      this.tagsEndpoint = `/api/tags`;
-      this.generateEndpoint = `/api/generate`;
-      this.embeddingsEndpoint = `/api/embeddings`;
-      this.psEndpoint = `/api/ps`;
-      this.showEndpoint = `/api/show`;
-      this.createEndpoint = `/api/create`;
-      this.pullEndpoint = `/api/pull`;
-      this.pushEndpoint = `/api/push`;
-      this.copyEndpoint = `/api/copy`;
-      this.deleteEndpoint = `/api/delete`;
-      this.listEndpoint = `/api/tags`;
-      this.embedEndpoint = `/api/embed`;
-      this.blobsEndpoint = `/api/blobs`;
-    } else {
-      // 直接访问API
-      this.chatEndpoint = `${this.baseUrl}/api/chat`;
-      this.tagsEndpoint = `${this.baseUrl}/api/tags`;
-      this.generateEndpoint = `${this.baseUrl}/api/generate`;
-      this.embeddingsEndpoint = `${this.baseUrl}/api/embeddings`;
-      this.psEndpoint = `${this.baseUrl}/api/ps`;
-      this.showEndpoint = `${this.baseUrl}/api/show`;
-      this.createEndpoint = `${this.baseUrl}/api/create`;
-      this.pullEndpoint = `${this.baseUrl}/api/pull`;
-      this.pushEndpoint = `${this.baseUrl}/api/push`;
-      this.copyEndpoint = `${this.baseUrl}/api/copy`;
-      this.deleteEndpoint = `${this.baseUrl}/api/delete`;
-      this.listEndpoint = `${this.baseUrl}/api/tags`;
-      this.embedEndpoint = `${this.baseUrl}/api/embed`;
-      this.blobsEndpoint = `${this.baseUrl}/api/blobs`;
-    }
+    // 始终使用相对路径通过代理访问API
+    this.chatEndpoint = `/api/chat`;
+    this.tagsEndpoint = `/api/tags`;
+    this.generateEndpoint = `/api/generate`;
+    this.embeddingsEndpoint = `/api/embeddings`;
+    this.psEndpoint = `/api/ps`;
+    this.showEndpoint = `/api/show`;
+    this.createEndpoint = `/api/create`;
+    this.pullEndpoint = `/api/pull`;
+    this.pushEndpoint = `/api/push`;
+    this.copyEndpoint = `/api/copy`;
+    this.deleteEndpoint = `/api/delete`;
+    this.listEndpoint = `/api/tags`;
+    this.embedEndpoint = `/api/embed`;
+    this.blobsEndpoint = `/api/blobs`;
   }
 
   /**
@@ -60,9 +40,12 @@ class OllamaAPI {
    * @param {string} newBaseUrl - 新的基础URL
    */
   updateBaseUrl(newBaseUrl) {
-    this.baseUrl = newBaseUrl;
-    // 重新判断是否使用代理
-    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
+    // 在生产环境下，我们不应该直接更新 baseUrl，因为请求会通过代理
+    // 只有在开发环境下，或者当用户手动在UI中设置时，才更新
+    if (import.meta.env?.DEV || newBaseUrl !== this.baseUrl) {
+      this.baseUrl = newBaseUrl;
+    }
+    // 重新初始化端点，但端点现在总是相对路径
     this.initEndpoints();
   }
 
@@ -70,10 +53,11 @@ class OllamaAPI {
    * 刷新API配置
    */
   refreshConfig() {
-    // 重新从环境变量获取配置
-    this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
-    // 重新判断是否使用代理
-    this.useProxy = import.meta.env?.DEV && !this.baseUrl.includes(window.location.hostname);
+    // 在生产环境下，我们不应该直接从环境变量刷新 baseUrl，因为请求会通过代理
+    // 只有在开发环境下，才从环境变量获取
+    if (import.meta.env?.DEV) {
+      this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || this.baseUrl;
+    }
     this.initEndpoints();
   }
 
