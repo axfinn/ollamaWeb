@@ -5,6 +5,11 @@
 格式基于 [Keep a Changelog](https://keepachanglog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.5.3] - 2025-07-31
+
+### 变更
+- 合并 debug/env-issue 分支，包含多项修复和优化
+
 ## [1.5.2] - 2025-07-31
 
 ### 修复
