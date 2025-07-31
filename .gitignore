@@ -27,9 +27,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# Vite
-.vite/
-
-# Global config file
-src/config.js
