@@ -2,9 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // 临时添加，用于调试 VITE_OLLAMA_HOST 是否被正确读取
-  console.log('VITE_OLLAMA_HOST in vite.config.js:', process.env.VITE_OLLAMA_HOST);
-
+  envDir: './', // 明确指定环境变量文件目录
   root: './src',
   build: {
     outDir: '../dist',
