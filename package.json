@@ -1,6 +1,6 @@
 {
   "name": "ollama-web",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "description": "一个基于 Ollama API 的 Web 界面，支持模型选择、连续对话和参数配置",
   "main": "src/main.js",
   "scripts": {

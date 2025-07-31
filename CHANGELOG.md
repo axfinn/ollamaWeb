@@ -5,6 +5,12 @@
 格式基于 [Keep a Changelog](https://keepachanglog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.5.0] - 2025-07-31
+
+### 修复
+- 修复 API 配置不生效问题，支持 .env 配置优先
+- 修复 Vite 代理 rewrite 规则，确保 API 请求路径正确
+
 ## [1.4.5] - 2025-07-31
 
 ### 修复
