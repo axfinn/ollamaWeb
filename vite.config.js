@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import fs from 'fs'; // 导入 Node.js 文件系统模块
 
 export default defineConfig({
   envDir: './', // 明确指定环境变量文件目录
@@ -19,6 +20,11 @@ export default defineConfig({
         assetFileNames: 'assets/[name].[ext]',
       },
     },
+    // 添加一个构建钩子，将环境变量写入文件以供检查
+    writeBundle(options, bundle) {
+      const envValue = process.env.VITE_OLLAMA_HOST || 'VITE_OLLAMA_HOST_NOT_SET';
+      fs.writeFileSync(resolve(options.dir, 'build_env_check.txt'), `VITE_OLLAMA_HOST during build: ${envValue}`);
+    }
   },
   server: {
     host: '0.0.0.0',
