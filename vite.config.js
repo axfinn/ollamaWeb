@@ -3,6 +3,8 @@ import { resolve } from 'path';
 import fs from 'fs'; // 导入 Node.js 文件系统模块
 
 export default defineConfig({
+  // 临时添加，用于调试 VITE_OLLAMA_HOST 是否被正确读取
+  console.log('VITE_OLLAMA_HOST in vite.config.js (inside defineConfig):', process.env.VITE_OLLAMA_HOST);
   envDir: './', // 明确指定环境变量文件目录
   root: './src',
   define: {
