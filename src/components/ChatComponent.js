@@ -45,8 +45,6 @@ class ChatComponent {
     this.inputHistory = [];
     this.currentHistoryIndex = -1;
     
-    this.ollamaAPI = new OllamaAPI();
-    
     this.init();
   }
   
@@ -54,7 +52,10 @@ class ChatComponent {
    * 初始化组件
    */
   init() {
-    // 从localStorage加载保存的API地址
+    // 初始化OllamaAPI实例，优先使用环境变量
+    this.ollamaAPI = new OllamaAPI();
+    
+    // 从localStorage加载保存的API地址，如果环境变量未设置
     this.loadSavedApiHost();
     
     // 从localStorage加载会话数据
@@ -84,14 +85,20 @@ class ChatComponent {
    * 从localStorage加载保存的API地址
    */
   loadSavedApiHost() {
-    const savedApiHost = localStorage.getItem('ollama-api-host');
-    if (savedApiHost) {
-      this.apiHostInput.value = savedApiHost;
-      // 更新API实例的baseUrl
-      this.ollamaAPI.updateBaseUrl(savedApiHost);
+    // 优先使用环境变量 VITE_OLLAMA_HOST
+    if (import.meta.env?.VITE_OLLAMA_HOST) {
+      this.ollamaAPI.updateBaseUrl(import.meta.env.VITE_OLLAMA_HOST);
+      this.apiHostInput.value = import.meta.env.VITE_OLLAMA_HOST;
     } else {
-      // 如果没有保存的API地址，则使用默认值或环境变量
-      this.apiHostInput.value = this.ollamaAPI.baseUrl;
+      const savedApiHost = localStorage.getItem('ollama-api-host');
+      if (savedApiHost) {
+        this.apiHostInput.value = savedApiHost;
+        // 更新API实例的baseUrl
+        this.ollamaAPI.updateBaseUrl(savedApiHost);
+      } else {
+        // 如果没有保存的API地址，则使用OllamaAPI的默认值
+        this.apiHostInput.value = this.ollamaAPI.baseUrl;
+      }
     }
   }
   

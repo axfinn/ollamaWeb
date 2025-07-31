@@ -23,7 +23,7 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_OLLAMA_HOST || 'http://localhost:11434',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
