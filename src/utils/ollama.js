@@ -10,6 +10,7 @@ class OllamaAPI {
    */
   constructor(baseUrl = 'http://localhost:11434') {
     // 尝试从环境变量获取 baseUrl
+    console.log('VITE_OLLAMA_HOST in OllamaAPI constructor:', import.meta.env?.VITE_OLLAMA_HOST);
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
     this.initEndpoints();
   }

@@ -3,7 +3,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   // 临时添加，用于调试 VITE_OLLAMA_HOST 是否被正确读取
-  // console.log('VITE_OLLAMA_HOST in vite.config.js:', process.env.VITE_OLLAMA_HOST);
+  console.log('VITE_OLLAMA_HOST in vite.config.js:', process.env.VITE_OLLAMA_HOST);
 
   root: './src',
   build: {
