@@ -6,10 +6,11 @@
 class OllamaAPI {
   /**
    * 构造函数
-   * @param {string} baseUrl - Ollama服务的基础URL
+   * @param {string} baseUrl - Ollama服务的基础URL (在生产环境会被忽略，因为请求通过代理)
    */
   constructor(baseUrl = 'http://localhost:11434') {
-    // 尝试从环境变量获取 baseUrl
+    // 在生产环境，baseUrl 实际上不会被直接使用，请求会通过 /api 代理
+    // 但为了开发环境的兼容性，我们仍然保留它
     this.baseUrl = import.meta.env?.VITE_OLLAMA_HOST || baseUrl;
     this.initEndpoints();
   }
