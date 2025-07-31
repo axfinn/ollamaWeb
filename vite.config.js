@@ -4,6 +4,9 @@ import { resolve } from 'path';
 export default defineConfig({
   envDir: './', // 明确指定环境变量文件目录
   root: './src',
+  define: {
+    'import.meta.env.VITE_OLLAMA_HOST': JSON.stringify(process.env.VITE_OLLAMA_HOST || 'http://localhost:11434'),
+  },
   build: {
     outDir: '../dist',
     rollupOptions: {
