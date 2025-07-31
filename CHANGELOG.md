@@ -5,6 +5,11 @@
 格式基于 [Keep a Changelog](https://keepachanglog.com/zh-CN/1.0.0/)，
 版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.5.1] - 2025-07-31
+
+### 修复
+- 修复 API 地址保存按钮 ID 不匹配问题
+
 ## [1.5.0] - 2025-07-31
 
 ### 修复
